@@ -110,7 +110,7 @@ public:
         if (!sbm.findByCode(subCode))   return false;
 
         float g4  = Utils::toGPA4(s10);
-        std::string ltr = Utils::toLetter(g4);
+        std::string ltr = Utils::toLetter(s10);
 
         // Tìm bản ghi điểm đã có
         for (ScNode* c = head; c; c = c->next) {
