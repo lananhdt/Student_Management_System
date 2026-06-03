@@ -1,0 +1,6 @@
+202418915,Nguyễn Văn An,K65-CNPM,CNTT,2020,an.nv@edu.vn,Đang học,3.2
+202418916,Trần Thị Bình,K65-KHMT,KHMT,2020,binh.tt@edu.vn,Đã tốt nghiệp,3.8
+202418917,Lê Hoàng Cường,K64-ATTT,ATTT,2019,cuong.lh@edu.vn,Cảnh báo,1.5
+202418918,Phạm Ngọc Dung,K66-HTTT,HTTT,2021,dung.pn@edu.vn,Đang học,3.5
+202418919,Hoàng Văn Em,K65-CNPM,MI1,2020,em.hv@edu.vn,Bảo lưu,2.8
+202418920,Vũ Đức Phát,K67-AI,Trí tuệ nhân tạo,2022,phat.vd@edu.vn,Đang học,3.9
