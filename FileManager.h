@@ -1,4 +1,4 @@
-// =============================================================================================
+﻿// =============================================================================================
 //  FILEMANAGER.H – ĐỌC / GHI DỮ LIỆU
 //  – Xử lý lưu trữ dữ liệu ra file text.
 //  – Định dạng file: các trường cách nhau bằng dấu '|'.
@@ -11,6 +11,7 @@
 #pragma once
 #include "StudentManager.h"
 #include "SubjectManager.h"
+#include "ClassManager.h"
 #include "ScoreManager.h"
 #include "Utils.h"
 #include <fstream>
@@ -76,7 +77,7 @@ inline bool saveSubjects(const std::string& path, const SubjectManager& sm) {
     if (!f.is_open()) return false;
     for (SubNode* c = sm.getHead(); c; c = c->next) {
         const Subject& s = c->data;
-        f << s.code << SEP << s.name << SEP << s.credits << "\n";
+        f << s.code << SEP << s.name << SEP << s.credits << SEP << (s.isActive ? 1 : 0) << "\n";
     }
     return true;
 }
@@ -89,13 +90,73 @@ inline bool loadSubjects(const std::string& path, SubjectManager& sm) {
     while (std::getline(f, line)) {
         line = Utils::trim(line);
         if (line.empty()) continue;
-        std::string p[3]; int got;
-        split(line, SEP, p, 3, got);
+
+        std::string p[4]; int got;
+        split(line, SEP, p, 4, got);
         if (got < 3) continue;
+
         Subject s;
         s.code = p[0]; s.name = p[1];
         try { s.credits = std::stoi(p[2]); } catch (...) { s.credits = 0; }
+
+        // isActive: nếu file cũ không có thì mặc định là true
+        if (got >= 4) s.isActive = (p[3] == "1");
+        else s.isActive = true; 
+
         sm.add(s);
+    }
+    return true;
+}
+
+// Lưu Lớp học phần
+inline bool saveClasses(const std::string& classPath, const std::string& rosterPath, const ClassManager& cm) {
+    std::ofstream fc(classPath);
+    std::ofstream fr(rosterPath);
+    if (!fc.is_open() || !fr.is_open()) return false;
+    for (ClassNode* c = cm.getHead(); c; c = c->next) {
+        const ClassSession& cs = c->data;
+        fc << cs.classCode << SEP << cs.subjectCode << SEP << "\n";
+        for (RosterNode* r = cs.rosterHead; r; r = r->next)
+            fr << cs.classCode << SEP << r->studentId << "\n";
+    }
+    return true;
+}
+
+// Tải danh sách lớp học phần từ file "classes.txt"
+inline bool loadClasses(const std::string& classPath, const std::string& rosterPath, ClassManager& cm, const StudentManager& stm) {
+    std::ifstream fc(classPath);
+    if (fc.is_open()) {
+        std::string line;
+        while (std::getline(fc, line)) {
+            line = Utils::trim(line);
+            if (line.empty()) continue;
+
+            std::string p[2]; int got;
+            split(line, SEP, p, 2, got);
+            if (got < 2) continue;
+
+            ClassSession cs;
+            cs.classCode   = p[0];
+            cs.subjectCode = p[1];
+
+            cm.addClass(cs);
+        }
+    }
+
+    // Tải danh sách sinh viên đăng ký lớp từ file "class_roster.txt"
+    std::ifstream fr(rosterPath);
+    if (fr.is_open()) {
+        std::string line;
+        while (std::getline(fr, line)) {
+            line = Utils::trim(line);
+            if (line.empty()) continue;
+            std::string p[2]; int got;
+            split(line, SEP, p, 2, got);
+            if (got < 2) continue;
+            std::string classCode = p[0];
+            std::string studentId = p[1];
+            cm.addStudentToClass(classCode, studentId, stm);
+        }
     }
     return true;
 }
@@ -135,17 +196,20 @@ inline bool loadScores(const std::string& path,
 }
 
 // Đồng bộ hóa toàn bộ dữ liệu (Sinh viên, Học phần, Điểm số) với file text
-inline void loadAll(StudentManager& stm, SubjectManager& sbm, ScoreManager& scm) {
+inline void loadAll(StudentManager& stm, SubjectManager& sbm, ClassManager& cm, ScoreManager& scm) {
     loadStudents("students.txt", stm);
     loadSubjects("subjects.txt", sbm);
+    loadClasses ("classes.txt", "class_roster.txt", cm, stm);
     loadScores  ("scores.txt",   scm, stm, sbm);
 }
 
 inline void saveAll(const StudentManager& stm,
                     const SubjectManager& sbm,
+                    const ClassManager&   cm,
                     const ScoreManager&   scm) {
     saveStudents("students.txt", stm);
     saveSubjects("subjects.txt", sbm);
+    saveClasses ("classes.txt", "class_roster.txt", cm);
     saveScores  ("scores.txt",   scm);
 }
 

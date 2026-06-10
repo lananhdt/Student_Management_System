@@ -1,4 +1,4 @@
-// =============================================================================================
+﻿// =============================================================================================
 //  STUDENTMANAGER.H - QUẢN LÝ SINH VIÊN
 //  – Doubly Linked List các bản ghi sinh viên (Student)
 //  – Hash Map O(1) để tra cứu sinh viên theo MSSV
@@ -26,39 +26,9 @@ class StudentManager {
         return slow;
     }
 
-    // Trộn hai danh sách sinh viên dựa trên hàm so sánh (cmp)
-    SNode* mergeById(SNode* a, SNode* b) {
-        if (!a) return b; if (!b) return a;
-        if (a->data.id <= b->data.id) {
-            a->next = mergeById(a->next, b);
-            if (a->next) a->next->prev = a;
-            a->prev = nullptr; return a;
-        }
-        b->next = mergeById(a, b->next);
-        if (b->next) b->next->prev = b;
-        b->prev = nullptr; return b;
-    }
-
-    // Sắp xếp danh sách sinh viên theo hàm so sánh (cmp)
-    SNode* mergeByName(SNode* a, SNode* b) {
-        if (!a) return b; if (!b) return a;
-        if (a->data.name <= b->data.name) {
-            a->next = mergeByName(a->next, b);
-            if (a->next) a->next->prev = a;
-            a->prev = nullptr; return a;
-        }
-        b->next = mergeByName(a, b->next);
-        if (b->next) b->next->prev = b;
-        b->prev = nullptr; return b;
-    }
-
     // Merge sort GPA giảm dần — nhận mảng float* gpaArr song song
-    // Vì GPA nằm ở ScoreManager, ta sort bằng cách nhận lambda-like
-    // thông qua con trỏ hàm so sánh
     typedef bool (*CmpFn)(SNode*, SNode*);
 
-
-    // 
     SNode* mergeWith(SNode* a, SNode* b, CmpFn cmp) {
         if (!a) return b; if (!b) return a;
         if (cmp(a, b)) {
@@ -108,7 +78,7 @@ public:
     //      Trả về true nếu thành công;
     //      Trả về false nếu MSSV đã tồn tại.
     // =============================================================================================
-    
+        
         if (hmap.exists(s.id)) return false;
         SNode* n = new SNode(s);
         if (!head) { head = tail = n; }
@@ -142,22 +112,24 @@ public:
 
         bool found = false;
         for (SNode* c = head; c; c = c->next) {
-            // tìm không phân biệt hoa thường: so sánh đơn giản contain
+            // Tìm không phân biệt hoa thường
             if (c->data.name.find(kw) != std::string::npos) {
                 if (!found) {
                     std::cout << "\n";
-                    std::cout << Utils::col("MSSV", 12)
-                              << Utils::col("Ho va ten", 24)
-                              << Utils::col("Lop", 12)
-                              << Utils::col("Ngay sinh", 14)
-                              << Utils::col("Trang thai", 14) << "\n";
+                    std::cout << Utils::col("MSSV", 11)
+                              << Utils::col("Họ và tên", 25)
+                              << Utils::col("Lớp", 10)
+                              << Utils::col("Ngày sinh", 12)
+                              << Utils::col("Ngành", 25)
+                              << Utils::col("Trạng thái", 12) << "\n";
                     Utils::line();
                 }
-                std::cout << Utils::col(c->data.id, 12)
-                          << Utils::col(c->data.name, 24)
-                          << Utils::col(c->data.className, 12)
-                          << Utils::col(c->data.dob, 14)
-                          << Utils::col(c->data.status, 14) << "\n";
+                std::cout << Utils::col(c->data.id, 11)
+                          << Utils::col(c->data.name, 25)
+                          << Utils::col(c->data.className, 10)
+                          << Utils::col(c->data.dob, 12)
+                          << Utils::col(c->data.major, 25)
+                          << Utils::col(c->data.status, 12) << "\n";
                 found = true;
             }
         }
@@ -175,10 +147,7 @@ public:
 
         SNode* n = hmap.get(id);
         if (!n) return false;
-        if (n->prev) n->prev->next = n->next; else head = n->next;
-        if (n->next) n->next->prev = n->prev; else tail = n->prev;
-        hmap.remove(id);
-        delete n; count--;
+        n->data.status = "Đã nghỉ học";
         return true;
     }
 
@@ -205,24 +174,33 @@ public:
 
     // In danh sách toàn bộ sinh viên
     void printAll() const {
-        if (!head) { std::cout << "  (Chua co sinh vien nao)\n"; return; }
+        if (!head) { std::cout << "  (Chưa có sinh viên nào)\n"; return; }
         std::cout << "\n";
-        std::cout << Utils::col("MSSV", 13)
-                  << Utils::col("Ho va ten", 24)
-                  << Utils::col("Lop", 12)
-                  << Utils::col("Ngay sinh", 13)
-                  << Utils::col("Nganh", 18)
-                  << Utils::col("Trang thai", 14) << "\n";
-        Utils::line();
+
+        int wID = 11, wName = 25, wClass = 10, wDOB = 12, wMajor = 25, wStatus = 12;
+        int totalWidth = wID + wName + wClass + wDOB + wMajor + wStatus;
+
+        std::cout << Utils::col("MSSV", wID)
+              << Utils::col("Họ và tên", wName)
+              << Utils::col("Lớp", wClass)
+              << Utils::col("Ngày sinh", wDOB)
+              << Utils::col("Ngành", wMajor)
+              << Utils::col("Trạng thái", wStatus) << "\n";
+        Utils::line('-', totalWidth);
+
+        int activeCount = 0;
         for (SNode* c = head; c; c = c->next) {
-            std::cout << Utils::col(c->data.id, 13)
-                      << Utils::col(c->data.name, 24)
-                      << Utils::col(c->data.className, 12)
-                      << Utils::col(c->data.dob, 13)
-                      << Utils::col(c->data.major, 18)
-                      << Utils::col(c->data.status, 14) << "\n";
+            if (c->data.status == "Đã nghỉ học") continue;
+            std::cout << Utils::col(c->data.id, wID)
+                      << Utils::col(c->data.name, wName)
+                      << Utils::col(c->data.className, wClass)
+                      << Utils::col(c->data.dob, wDOB)
+                      << Utils::col(c->data.major, wMajor)
+                      << Utils::col(c->data.status, wStatus) << "\n";
+            activeCount++;
         }
-        Utils::line();
-        std::cout << "  Tong so: " << count << " sinh vien.\n";
+        Utils::line('-', totalWidth);
+
+        std::cout << "  Tổng số: " << count << " sinh viên.\n";
     }
 };

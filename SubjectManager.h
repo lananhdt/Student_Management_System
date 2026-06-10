@@ -1,4 +1,4 @@
-// =============================================================================================
+﻿// =============================================================================================
 //  SUBJECTMANAGER.H - QUẢN LÝ MÔN HỌC
 //  – Doubly Linked List các đối tượng môn học (Subject)
 //  – Hash Map O(1) để tra cứu môn học theo mã môn
@@ -35,7 +35,8 @@ public:
     // Returns: 
     //      Trả về true nếu thêm thành công; trả về false nếu mã môn đã tồn tại trong Hash Map.
     // =============================================================================================
-        if (hmap.exists(s.code)) return false;
+        
+    if (hmap.exists(s.code)) return false;
         SubNode* n = new SubNode(s);
         if (!head) { head = tail = n; }
         else { tail->next = n; n->prev = tail; tail = n; }
@@ -56,6 +57,40 @@ public:
         return hmap.get(code);
     }
 
+    bool findByName(const std::string& name) const {
+        // =============================================================================================
+        // Chức năng: Tìm kiếm học phần theo tên (hỗ trợ từ khóa).
+        // Args: 
+        //      name : Từ khóa tìm kiếm.
+        // Returns: 
+        //      Trả về true nếu tìm thấy;
+        //      Trả về false nếu không.
+        // =============================================================================================
+            bool found = false;
+            
+            // Duyệt qua danh sách học phần
+            for (SubNode* c = head; c; c = c->next) {
+                // Kiểm tra từ khóa có nằm trong tên học phần không
+                if (c->data.name.find(name) != std::string::npos) {
+                    if (!found) {
+                        std::cout << "\n";
+                        // Định dạng cột hiển thị cho Học phần
+                        std::cout << Utils::col("Mã học phần", 12)
+                                  << Utils::col("Tên học phần", 33)
+                                  << Utils::col("Số tín chỉ", 12) << "\n";
+                        Utils::line();
+                    }
+                    std::cout << Utils::col(c->data.code, 12)
+                              << Utils::col(c->data.name, 32)
+                              << Utils::col(std::to_string(c->data.credits), 12) << "\n";
+                    found = true;
+                }
+            }
+            
+            if (found) Utils::line();
+            return found;
+    }
+
     bool remove(const std::string& code) {
     // =============================================================================================
     // Chức năng: Xóa một môn học ra khỏi danh sách và cập nhật Hash Map.
@@ -67,10 +102,7 @@ public:
 
         SubNode* n = hmap.get(code);
         if (!n) return false;
-        if (n->prev) n->prev->next = n->next; else head = n->next;
-        if (n->next) n->next->prev = n->prev; else tail = n->prev;
-        hmap.remove(code);
-        delete n; count--;
+        n->data.isActive = false;
         return true;
     }
 
@@ -93,20 +125,25 @@ public:
         return true;
     }
 
-    // In toàn bộ danh sách môn học đang lưu trữ trong hệ thống
+    // In toàn bộ danh sách học phần đang lưu trữ trong hệ thống
     void printAll() const {
-        if (!head) { std::cout << "  (Chua co mon hoc nao)\n"; return; }
+        if (!head) { std::cout << "  (Chưa có học phần nào)\n"; return; }
         std::cout << "\n";
-        std::cout << Utils::col("Ma mon", 12)
-                  << Utils::col("Ten mon hoc", 32)
-                  << Utils::col("So tin chi", 12) << "\n";
-        Utils::line(56);
+
+        std::cout << Utils::col("Mã học phần", 12)
+                  << Utils::col("Tên học phần", 32)
+                  << Utils::col("Số tín chỉ", 12) << "\n";
+        Utils::line();
+
+        int activeCount = 0;
         for (SubNode* c = head; c; c = c->next) {
+            if (!c->data.isActive) continue;
             std::cout << Utils::col(c->data.code, 12)
                       << Utils::col(c->data.name, 32)
                       << std::setw(6) << c->data.credits << "\n";
+            activeCount++;
         }
-        Utils::line(56);
-        std::cout << "  Tong so: " << count << " mon hoc.\n";
+        Utils::line();
+        std::cout << "  Tổng số: " << count << " học phần.\n";
     }
 };
