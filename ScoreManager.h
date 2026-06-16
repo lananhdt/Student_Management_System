@@ -1,4 +1,4 @@
-﻿// =============================================================================================
+// =============================================================================================
 //  SCOREMANAGER.H - QUẢN LÝ ĐIỂM SỐ & KẾT QUẢ HỌC TẬP
 //  – Doubly Linked List các bản ghi điểm (Score)
 //  – Tính GPA học kỳ (semester) và GPA tích lũy (cumulative)
@@ -51,10 +51,22 @@ class ScoreManager {
         std::string id; std::string name; std::string cls; float gpa; int credits; 
     };
 
-    void calcGPA(const std::string& sid,
-                 const SubjectManager& sm,
-                 float& outGPA4,
-                 int&   outCredits) const {
+    // Struct tạm thời để lưu điểm cao nhất của mỗi môn học khi tính CPA
+    struct MaxScoreNode {
+        std::string subCode;
+        float maxScore4;
+        int credits;
+        MaxScoreNode* next;
+        MaxScoreNode(std::string sc, float m, int c) : subCode(sc), maxScore4(m), credits(c), next(nullptr) {}
+    };
+
+    // Struct tạm thời để trích xuất và sắp xếp các học kỳ
+    struct SemNode {
+        std::string semester;
+        SemNode* next;
+        SemNode(std::string s) : semester(s), next(nullptr) {}
+    };
+
     // =============================================================================================
     // Chức năng: Tính GPA tích lũy của một sinh viên dựa trên danh sách điểm.
     // Args: 
@@ -66,19 +78,86 @@ class ScoreManager {
     //      Không có giá trị trả về (void).
     // =============================================================================================
 
-        float sumW  = 0.0f;
-        int   sumC  = 0;
+    void calcCPA(const std::string& sid,
+        const SubjectManager& sm,
+        float& outCPA,
+        int&   outCredits) const {
+        MaxScoreNode* headMax = nullptr;
+
+        // BƯỚC 1: Duyệt tất cả bản ghi điểm để lọc lấy điểm cao nhất từng môn
         for (ScNode* c = head; c; c = c->next) {
-            if (c->data.studentId != sid) continue;
+        if (c->data.studentId == sid) {
             SubNode* sub = sm.findByCode(c->data.subjectCode);
             if (!sub) continue;
+            
+            float s4 = c->data.score4;
             int cr = sub->data.credits;
-            sumW += c->data.score4 * cr;
-            sumC += cr;
+
+            // Tìm xem môn này đã có trong danh sách tạm chưa
+            MaxScoreNode* curr = headMax;
+            bool found = false;
+            while (curr) {
+                if (curr->subCode == c->data.subjectCode) {
+                    // Nếu đã học môn này, cập nhật lại điểm nếu điểm đợt này cao hơn
+                    if (s4 > curr->maxScore4) {
+                        curr->maxScore4 = s4;
+                    }
+                    found = true;
+                    break;
+                }
+                curr = curr->next;
+            }
+            
+            // Nếu chưa có, thêm node mới vào đầu danh sách tạm
+            if (!found) {
+                MaxScoreNode* n = new MaxScoreNode(c->data.subjectCode, s4, cr);
+                n->next = headMax;
+                headMax = n;
+            }
         }
-        outGPA4    = (sumC > 0) ? sumW / sumC : 0.0f;
+        }
+
+        // BƯỚC 2: Tính toán CPA dựa trên các điểm cao nhất và giải phóng bộ nhớ
+        float sumW = 0.0f;
+        int   sumC = 0;
+        MaxScoreNode* curr = headMax;
+
+        while (curr) {
+        sumW += curr->maxScore4 * curr->credits;
+        sumC += curr->credits;
+        
+        // Xóa node tạm để tránh Memory Leak
+        MaxScoreNode* temp = curr;
+        curr = curr->next;
+        delete temp; 
+        }
+
+        outCPA     = (sumC > 0) ? sumW / sumC : 0.0f;
         outCredits = sumC;
-    }
+        }
+
+        void calcSemesterGPA(const std::string& sid,
+            const std::string& semester,
+            const SubjectManager& sm,
+            float& outGPA,
+            int&   outCredits) const {
+                float sumW  = 0.0f;
+                int   sumC  = 0;
+
+                for (ScNode* c = head; c; c = c->next) {
+                // Chỉ tính những bản ghi khớp MSSV và khớp Học kỳ
+                if (c->data.studentId == sid && c->data.semester == semester) {
+                SubNode* sub = sm.findByCode(c->data.subjectCode);
+                if (!sub) continue;
+                int cr = sub->data.credits;
+                sumW += c->data.score4 * cr;
+                sumC += cr;
+                }
+                }
+
+                outGPA     = (sumC > 0) ? sumW / sumC : 0.0f;
+                outCredits = sumC;
+                }
 
     // Hàm trộn 2 nửa mảng theo GPA giảm dần
     void mergeRows(Row* arr, int l, int m, int r) const {
@@ -113,7 +192,7 @@ class ScoreManager {
             mergeRows(arr, l, m, r);
         }
     }
-
+    
 public:
     ScoreManager() : head(nullptr), tail(nullptr), count(0) {}
     ~ScoreManager() {
@@ -124,17 +203,20 @@ public:
     int getCount() const { return count; }
 
     bool addOrUpdate(const std::string& sid, const std::string& subCode,
-                     float s10,
+                     const std::string& semester,
+                     float cc, float gk, float ck, float s10,
                      const StudentManager& stm, const SubjectManager& sbm) {
     // =============================================================================================
     // Chức năng: Thêm một bản ghi điểm mới vào hệ thống. Nếu cặp (MSSV, Mã môn) đã tồn tại trong
     //            danh sách, hàm sẽ thực hiện cập nhật lại điểm số.
     // Args: 
-    //      sid     : MSSV của sinh viên cần thêm/cập nhật điểm.
-    //      subCode : Mã môn học tương ứng với bản ghi điểm.
-    //      s10     : Điểm hệ 10 cần nhập (kiểu float).
-    //      stm     : Tham chiếu đến StudentManager để kiểm tra sự tồn tại của sinh viên.
-    //      sbm     : Tham chiếu đến SubjectManager để kiểm tra sự tồn tại của môn học.
+    //      sid      : MSSV của sinh viên cần thêm/cập nhật điểm.
+    //      subCode  : Mã môn học tương ứng với bản ghi điểm.
+    //      semester : Học kỳ của bản ghi điểm.
+    //      cc, gk, ck : Điểm chuyên cần, giữa kỳ, cuối kỳ.
+    //      s10      : Điểm hệ 10 cần nhập (kiểu float).
+    //      stm      : Tham chiếu đến StudentManager để kiểm tra sự tồn tại của sinh viên.
+    //      sbm      : Tham chiếu đến SubjectManager để kiểm tra sự tồn tại của môn học.
     // Returns: 
     //      Trả về true nếu thêm/cập nhật thành công; trả về false nếu không tìm thấy sinh viên 
     //      hoặc môn học trong cơ sở dữ liệu.
@@ -157,16 +239,25 @@ public:
         // Tìm bản ghi điểm đã có
         for (ScNode* c = head; c; c = c->next) {
             if (c->data.studentId == sid && c->data.subjectCode == subCode) {
-                c->data.score10 = s10;
-                c->data.score4  = g4;
-                c->data.letter  = ltr;
+                c->data.semester = semester;
+                c->data.cc       = cc;
+                c->data.gk       = gk;
+                c->data.ck       = ck;
+                c->data.score10  = s10;
+                c->data.score4   = g4;
+                c->data.letter   = ltr;
                 return true;
             }
         }
 
         // Chưa có điểm → thêm mới
-        Score sc; sc.studentId = sid; sc.subjectCode = subCode;
+        Score sc; 
+        sc.studentId = sid; 
+        sc.subjectCode = subCode;
+        sc.semester = semester;
+        sc.cc = cc; sc.gk = gk; sc.ck = ck;
         sc.score10 = s10; sc.score4 = g4; sc.letter = ltr;
+        
         ScNode* n = new ScNode(sc);
         if (!head) { head = tail = n; }
         else { tail->next = n; n->prev = tail; tail = n; }
@@ -203,9 +294,7 @@ public:
         return false;
     }
 
-    void printTranscript(const std::string& sid,
-                         const StudentManager& stm,
-                         const SubjectManager& sbm) const {
+    
     // =============================================================================================
     // Chức năng: In bảng điểm chi tiết của một sinh viên cụ thể, bao gồm GPA và xếp loại.
     // Args: 
@@ -216,53 +305,107 @@ public:
     //      Không có giá trị trả về (void).
     // =============================================================================================
 
-        SNode* sv = stm.findById(sid);
-        if (!sv) { std::cout << "  [!] Không tìm thấy sinh viên MSSV: " << sid << "\n"; return; }
+    void printTranscript(const std::string& sid,
+        const StudentManager& stm,
+        const SubjectManager& sbm) const {
+            SNode* sv = stm.findById(sid);
+            if (!sv) { std::cout << "  [!] Không tìm thấy sinh viên MSSV: " << sid << "\n"; return; }
 
-        Utils::title("BẢNG ĐIỂM SINH VIÊN");
-        std::cout << "  MSSV       : " << sv->data.id   << "\n"
-                  << "  Họ và tên  : " << sv->data.name << "\n"
-                  << "  Lớp        : " << sv->data.className << "\n"
-                  << "  Ngành      : " << sv->data.major << "\n";
-        Utils::line();
+            Utils::title("BẢNG ĐIỂM CHI TIẾT SINH VIÊN");
+            std::cout << "  MSSV       : " << sv->data.id   << "\n"
+            << "  Họ và tên  : " << sv->data.name << "\n"
+            << "  Lớp        : " << sv->data.className << "\n"
+            << "  Ngành      : " << sv->data.major << "\n";
+            Utils::line();
 
-        std::cout << Utils::col("Mã học phần", 10)
-                  << Utils::col("Tên học phần", 30)
-                  << Utils::col("Số tín chỉ", 5)
-                  << Utils::col("Điểm học phần", 9)
-                  << Utils::col("Điểm hệ 4", 8)
-                  << Utils::col("Điểm chữ", 6) << "\n";
-        Utils::line();
+            // 1. Trích xuất các học kỳ duy nhất và sắp xếp tăng dần (Insertion Sort trên Linked List)
+            SemNode* semHead = nullptr;
+            for (ScNode* c = head; c; c = c->next) {
+            if (c->data.studentId == sid) {
+            // Kiểm tra xem học kỳ đã có trong danh sách tạm chưa
+            bool exists = false;
+            for (SemNode* s = semHead; s; s = s->next) {
+            if (s->semester == c->data.semester) { exists = true; break; }
+            }
 
-        int   totalC = 0;
-        float sumW   = 0.0f;
-        bool  found  = false;
+            // Nếu chưa có, chèn vào danh sách tạm theo thứ tự alphabet (VD: 20241 -> 20242 -> 20251)
+            if (!exists) {
+            SemNode* n = new SemNode(c->data.semester);
+            if (!semHead || semHead->semester > n->semester) {
+                n->next = semHead; 
+                semHead = n;
+            } else {
+                SemNode* p = semHead;
+                while (p->next && p->next->semester < n->semester) {
+                    p = p->next;
+                }
+                n->next = p->next; 
+                p->next = n;
+            }
+            }
+            }
+            }
 
-        for (ScNode* c = head; c; c = c->next) {
-            if (c->data.studentId != sid) continue;
+            if (!semHead) { std::cout << "  (Sinh viên chưa có bản ghi điểm nào)\n"; Utils::line(); return; }
+
+            // 2. Duyệt qua từng học kỳ và in kết quả
+            for (SemNode* s = semHead; s; s = s->next) {
+            std::cout << "\n  >> Học kỳ: " << s->semester << "\n";
+            std::cout << "  " << Utils::col("Mã học phần", 12)
+                << Utils::col("Tên học phần", 35)
+                << Utils::col("TC", 4)
+                << Utils::col("Hệ 10", 7)
+                << Utils::col("Hệ 4", 6)
+                << Utils::col("Chữ", 4) << "\n";
+            Utils::line('-', 75);
+
+            float sumW = 0.0f;
+            int semCredits = 0;
+
+            for (ScNode* c = head; c; c = c->next) {
+            if (c->data.studentId == sid && c->data.semester == s->semester) {
             SubNode* sub = sbm.findByCode(c->data.subjectCode);
             std::string subName = sub ? sub->data.name : "???";
             int cr = sub ? sub->data.credits : 0;
+            
             sumW += c->data.score4 * cr;
-            totalC += cr;
-            found = true;
-            std::cout << Utils::col(c->data.subjectCode, 10)
-                      << Utils::col(subName, 30)
-                      << std::setw(4) << cr << " "
-                      << std::setw(7) << std::fixed << std::setprecision(1) << c->data.score10 << "  "
-                      << std::setw(5) << std::fixed << std::setprecision(1) << c->data.score4  << "  "
-                      << Utils::col(c->data.letter, 6) << "\n";
-        }
+            semCredits += cr;
 
-        if (!found) { std::cout << "  (Chưa có điểm nào)\n"; Utils::line(); return; }
+            std::cout << "  " << Utils::col(c->data.subjectCode, 12)
+                        << Utils::col(subName, 35)
+                        << std::setw(2) << cr << "  "
+                        << std::setw(5) << std::fixed << std::setprecision(1) << c->data.score10 << "  "
+                        << std::setw(4) << std::fixed << std::setprecision(1) << c->data.score4  << "  "
+                        << Utils::col(c->data.letter, 4) << "\n";
+            }
+            }
 
-        Utils::line();
-        float gpa = (totalC > 0) ? sumW / totalC : 0.0f;
-        std::cout << "  Tổng tín chỉ tích luỹ  : " << totalC << "\n"
-                  << "  GPA tích luỹ (hệ 4)    : " << std::fixed << std::setprecision(2) << gpa << "\n"
-                  << "  Xếp loại học lực       : " << Utils::classify(gpa) << "\n";
-        Utils::line();
-    }
+            // In tổng kết Học kỳ (Semester GPA)
+            float semGPA = (semCredits > 0) ? sumW / semCredits : 0.0f;
+            Utils::line('-', 75);
+            std::cout << "  => Điểm trung bình học kỳ (GPA): " << std::fixed << std::setprecision(2) << semGPA 
+                << " | Tín chỉ đạt: " << semCredits << "\n";
+            }
+
+            // 3. Giải phóng bộ nhớ danh sách học kỳ tạm
+            while (semHead) { 
+            SemNode* tmp = semHead; 
+            semHead = semHead->next; 
+            delete tmp; 
+            }
+
+            // 4. Tính toán và in Điểm trung bình tích lũy toàn khóa (CPA)
+            float cpa = 0.0f; 
+            int totalCredits = 0;
+            calcCPA(sid, sbm, cpa, totalCredits); // Gọi hàm calcCPA đã tạo trước đó
+
+            std::cout << "\n";
+            Utils::title("TỔNG KẾT TOÀN KHÓA");
+            std::cout << "  Tổng tín chỉ tích luỹ  : " << totalCredits << "\n"
+            << "  CPA tích luỹ (hệ 4)    : " << std::fixed << std::setprecision(2) << cpa << "\n"
+            << "  Xếp loại học lực       : " << Utils::classify(cpa) << "\n";
+            Utils::line();
+            }
 
     void printClassReport(const std::string& subCode,
                           const StudentManager& stm,
@@ -368,7 +511,7 @@ public:
             arr[idx].name = c->data.name;
             arr[idx].cls  = c->data.className;
             float gpa; int cr;
-            calcGPA(c->data.id, sbm, gpa, cr);
+            calcCPA(c->data.id, sbm, gpa, cr);
             arr[idx].gpa     = gpa;
             arr[idx].credits = cr;
             idx++;
