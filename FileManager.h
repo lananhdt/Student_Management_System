@@ -1,4 +1,4 @@
-﻿// =============================================================================================
+// =============================================================================================
 //  FILEMANAGER.H – ĐỌC / GHI DỮ LIỆU
 //  – Xử lý lưu trữ dữ liệu ra file text.
 //  – Định dạng file: các trường cách nhau bằng dấu '|'.
@@ -115,7 +115,7 @@ inline bool saveClasses(const std::string& classPath, const std::string& rosterP
     if (!fc.is_open() || !fr.is_open()) return false;
     for (ClassNode* c = cm.getHead(); c; c = c->next) {
         const ClassSession& cs = c->data;
-        fc << cs.classCode << SEP << cs.subjectCode << SEP << "\n";
+        fc << cs.classCode << SEP << cs.subjectCode << SEP << cs.semester << "\n";
         for (RosterNode* r = cs.rosterHead; r; r = r->next)
             fr << cs.classCode << SEP << r->studentId << "\n";
     }
@@ -131,13 +131,14 @@ inline bool loadClasses(const std::string& classPath, const std::string& rosterP
             line = Utils::trim(line);
             if (line.empty()) continue;
 
-            std::string p[2]; int got;
-            split(line, SEP, p, 2, got);
-            if (got < 2) continue;
+            std::string p[3]; int got;
+            split(line, SEP, p, 3, got);
+            if (got < 3) continue;
 
             ClassSession cs;
             cs.classCode   = p[0];
             cs.subjectCode = p[1];
+            cs.semester    = p[2];
 
             cm.addClass(cs);
         }
@@ -166,8 +167,12 @@ inline bool saveScores(const std::string& path, const ScoreManager& scm) {
     std::ofstream f(path);
     if (!f.is_open()) return false;
     for (ScNode* c = scm.getHead(); c; c = c->next) {
-        f << c->data.studentId  << SEP
+        f << c->data.studentId   << SEP
           << c->data.subjectCode << SEP
+          << c->data.semester    << SEP
+          << std::fixed << std::setprecision(1) << c->data.cc << SEP
+          << std::fixed << std::setprecision(1) << c->data.gk << SEP
+          << std::fixed << std::setprecision(1) << c->data.ck << SEP
           << std::fixed << std::setprecision(1) << c->data.score10 << "\n";
     }
     return true;
@@ -184,12 +189,15 @@ inline bool loadScores(const std::string& path,
     while (std::getline(f, line)) {
         line = Utils::trim(line);
         if (line.empty()) continue;
-        std::string p[3]; int got;
-        split(line, SEP, p, 3, got);
-        if (got < 3) continue;
+        std::string p[7]; int got;
+        split(line, SEP, p, 7, got);
+        if (got < 7) continue;
         try {
-            float s10 = std::stof(p[2]);
-            scm.addOrUpdate(p[0], p[1], s10, stm, sbm);
+            float cc  = std::stof(p[3]);
+            float gk  = std::stof(p[4]);
+            float ck  = std::stof(p[5]);
+            float s10 = std::stof(p[6]);
+            scm.addOrUpdate(p[0], p[1], p[2], cc, gk, ck, s10, stm, sbm);
         } catch (...) {}
     }
     return true;
