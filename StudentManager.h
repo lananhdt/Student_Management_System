@@ -1,4 +1,4 @@
-﻿// =============================================================================================
+// =============================================================================================
 //  STUDENTMANAGER.H - QUẢN LÝ SINH VIÊN
 //  – Doubly Linked List các bản ghi sinh viên (Student)
 //  – Hash Map O(1) để tra cứu sinh viên theo MSSV
@@ -201,6 +201,6 @@ public:
         }
         Utils::line('-', totalWidth);
 
-        std::cout << "  Tổng số: " << count << " sinh viên.\n";
+        std::cout << "  Tổng số: " << activeCount << " sinh viên.\n";
     }
 };
