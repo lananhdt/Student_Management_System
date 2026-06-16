@@ -1,4 +1,4 @@
-﻿// =============================================================================================
+// =============================================================================================
 //  MODELS.H  –  Toàn bộ cấu trúc dữ liệu thô
 //  Định nghĩa các cấu trúc dữ liệu cơ bản cho hệ thống.
 // =============================================================================================
@@ -29,9 +29,13 @@ struct Subject {
 struct Score {
     std::string studentId;   // MSSV
     std::string subjectCode; // Mã học phần
+    std::string semester;    // Học kỳ (VD: 20251)
+    float       cc;          // Điểm chuyên cần
+    float       gk;          // Điểm giữa kỳ
+    float       ck;          // Điểm cuối kỳ
     float       score10;     // Điểm hệ 10
     float       score4;      // Điểm hệ 4
-    std::string letter;      // A, B+, ...
+    std::string letter;      // Điểm chữ (A, B+, ...)
 };
 
 struct RosterNode {
@@ -43,6 +47,7 @@ struct RosterNode {
 struct ClassSession {
     std::string classCode;  // Mã lớp học phần (VD: 158241)
     std::string subjectCode;// Mã môn học (VD: MI3310)
+    std::string semester;   // Học kỳ (VD: 20251)
     RosterNode* rosterHead; // Danh sách liên kết đơn chứa MSSV
     
     ClassSession() : rosterHead(nullptr) {}
