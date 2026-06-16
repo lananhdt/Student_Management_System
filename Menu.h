@@ -1,4 +1,4 @@
-﻿// =============================================================================================
+// =============================================================================================
 //  MENU.H – HỆ THỐNG ĐIỀU KHIỂN GIAO DIỆN
 //  – Điều hướng người dùng qua 4 module chính
 //  – Xử lý logic nhập liệu và gọi các hàm nghiệp vụ của các Manager
@@ -410,19 +410,27 @@ class Menu {
 
             else if (ch == 1) {
                 Utils::title("     NHẬP / CẬP NHẬT ĐIỂM");
+                std::string semester = Utils::inputRequiredLine("  Nhập Học kỳ (VD: 20251): ", "Học kỳ");
                 std::string classCode = Utils::inputLine("  Nhập Mã lớp học phần : ");
                 ClassNode* cn = cm.findByClassCode(classCode);
                 if (!cn) {
                     std::cout << "  [!] Không tìm thấy lớp học phần.\n"; 
                     continue;
                 }
+
+                if (cn->data.semester != semester) {
+                    std::cout << "  [!] LỖI: Lớp học phần " << classCode 
+                              << " không được tổ chức trong học kỳ " << semester << ".\n";
+                    continue;
+                }
+
                 std::string subCode = cn->data.subjectCode;
                 SubNode* subNode = sbm.findByCode(subCode);
                 std::string subName = subNode ? subNode->data.name : "  [!] Không tìm thấy học phần.";
                 std::cout << "  => Học phần: " << subCode << " - " << subName << "\n";
 
                 std::string sid = Utils::inputLine("  Nhập MSSV            : ");
-                
+
                 // Kiểm tra sinh viên có đăng ký Lớp học phần này không
                 bool isInClass = false;
                 for (RosterNode* r = cn->data.rosterHead; r; r = r->next) {
@@ -456,7 +464,7 @@ class Menu {
                 std::cout << "  => Điểm hệ 10: " << s10 << "\n";
                 float g4  = Utils::toGPA4(s10);
 
-                scm.addOrUpdate(sid, subCode, s10, stm, sbm);
+                scm.addOrUpdate(sid, subCode, semester, cc, gk, ck, s10, stm, sbm);
                 FileManager::saveScores("scores.txt", scm);
                 std::cout << "  [OK] Đã lưu điểm: " << s10
                           << " (Hệ 4: " << Utils::f2(g4)
