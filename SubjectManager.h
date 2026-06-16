@@ -1,4 +1,4 @@
-﻿// =============================================================================================
+// =============================================================================================
 //  SUBJECTMANAGER.H - QUẢN LÝ MÔN HỌC
 //  – Doubly Linked List các đối tượng môn học (Subject)
 //  – Hash Map O(1) để tra cứu môn học theo mã môn
@@ -144,6 +144,6 @@ public:
             activeCount++;
         }
         Utils::line();
-        std::cout << "  Tổng số: " << count << " học phần.\n";
+        std::cout << "  Tổng số: " << activeCount << " học phần.\n";
     }
 };
