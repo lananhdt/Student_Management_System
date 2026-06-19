@@ -15,10 +15,9 @@
 namespace Utils {
 
 // =================== Tính điểm học phần hệ 10 ===================
-inline float calculateFinalScore(float cc, float gk, float ck, float a, float b) {
-    float diemQuaTrinh = (a * cc) + (b * gk);
-    float diemHocPhan = (0.5f * diemQuaTrinh) + (0.5f * ck);
-    return diemHocPhan;
+inline float calculateFinalScore(float cc, float tc, float gk, float ck, 
+    float wCC, float wTC, float wGK, float wFinal) {
+return (cc * wCC) + (tc * wTC) + (gk * wGK) + (ck * wFinal);
 }
 
 // =================== Chuyển điểm hệ 10 → hệ 4 ===================
