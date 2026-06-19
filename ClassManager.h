@@ -15,6 +15,7 @@ class ClassManager {
     ClassNode* head;
     ClassNode* tail;
     int count;
+    friend class FileManager;
 
 public:
     ClassManager() : head(nullptr), tail(nullptr), count(0) {}
@@ -66,16 +67,21 @@ public:
     // =========================================================================================
     bool addStudentToClass(const std::string& classCode, const std::string& studentId, const StudentManager& stm) {
         ClassNode* cn = findByClassCode(classCode);
-        if (!cn) return false; // Không tìm thấy lớp
+        if (!cn) return false;
         
-        if (!stm.findById(studentId)) return false; // Sinh viên không tồn tại trong hệ thống
+        SNode* sv = stm.findById(studentId);
+        
+        // Nếu không tồn tại HOẶC sinh viên đã nghỉ học, chặn lại ngay!
+        if (!sv || sv->data.status == "Đã nghỉ học") {
+            return false; 
+        }
 
         // Kiểm tra xem sinh viên đã có trong lớp chưa
         for (RosterNode* r = cn->data.rosterHead; r; r = r->next) {
             if (r->studentId == studentId) return false; // Đã có trong lớp
         }
 
-        // Chèn sinh viên vào đầu danh sách Roster (độ phức tạp O(1))
+        // Chèn sinh viên vào đầu danh sách Roster
         RosterNode* rn = new RosterNode(studentId);
         rn->next = cn->data.rosterHead;
         cn->data.rosterHead = rn;
@@ -115,5 +121,4 @@ public:
         }
         std::cout << "=========================================================\n";
     }
-    ClassNode* getHead() const { return head; }
 };
