@@ -18,6 +18,8 @@ class StudentManager {
     SNode* tail;
     int    count;
     StudentHashMap hmap;
+    friend class FileManager;
+    friend class ScoreManager;
 
     // Tìm node giữa danh sách (slow pointer)
     SNode* midNode(SNode* h) {
@@ -67,7 +69,6 @@ public:
     }
 
     int    getCount() const { return count; }
-    SNode* getHead()  const { return head; }
 
     bool add(const Student& s) {
     // =============================================================================================
