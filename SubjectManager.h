@@ -16,6 +16,7 @@ class SubjectManager {
     SubNode*       tail;
     int            count;
     SubjectHashMap hmap;
+    friend class FileManager;
 
 public:
     SubjectManager() : head(nullptr), tail(nullptr), count(0) {}
@@ -25,7 +26,6 @@ public:
     }
 
     int     getCount() const { return count; }
-    SubNode* getHead() const { return head; }
 
     bool add(const Subject& s) {
     // =============================================================================================
