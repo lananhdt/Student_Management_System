@@ -83,47 +83,71 @@ class ScoreManager {
     };
 
     // =============================================================================================
-    // Chức năng: Tính GPA tích lũy của một sinh viên dựa trên danh sách điểm.
+    // Chức năng: Tính CPA tích lũy của một sinh viên dựa trên danh sách điểm.
+    //            Đã khắc phục lỗi tràn mảng (buffer overflow) bằng Singly Linked List (MaxScoreNode).
     // Args: 
     //      sid        : MSSV của sinh viên cần tính GPA.
     //      sm         : Tham chiếu đến SubjectManager để lấy tín chỉ của môn học.
-    //      outGPA4    : GPA tích lũy của sinh viên (kiểu float) được trả về qua tham số out.
+    //      outCPA     : CPA tích lũy của sinh viên (kiểu float) được trả về qua tham số out.
     //      outCredits : Tổng số tín chỉ của sinh viên (kiểu int) được trả về qua tham số out.
     // Returns: 
     //      Không có giá trị trả về (void).
     // =============================================================================================
 
-    void calcCPA(const std::string& sid, const SubjectManager& sm, float& outCPA, int&   outCredits) const {
-        SubjectScore tempMap[200]; 
-        int mapSize = 0;
+    void calcCPA(const std::string& sid, const SubjectManager& sm, float& outCPA, int& outCredits) const {
+        // Khởi tạo đầu danh sách liên kết tạm thời để lưu điểm cao nhất của từng môn
+        MaxScoreNode* tempHead = nullptr;
 
-        // Duyệt tất cả bản ghi điểm để lọc lấy điểm cao nhất từng môn
+        // 1. Duyệt tất cả bản ghi điểm để lọc lấy điểm cao nhất từng môn
         for (ScNode* c = head; c; c = c->next) {
             if (c->data.studentId == sid) {
                 SubNode* sub = sm.findByCode(c->data.subjectCode);
+                // Bỏ qua nếu môn học không tồn tại hoặc số tín chỉ = 0
                 if (!sub || sub->data.credits == 0) continue;
     
-                // Tìm trong mảng tạm
+                // Tìm xem môn này đã có trong danh sách tạm chưa
                 bool found = false;
-                for (int i = 0; i < mapSize; i++) {
-                    if (tempMap[i].subCode == c->data.subjectCode) {
-                        if (c->data.score4 > tempMap[i].maxS4) tempMap[i].maxS4 = c->data.score4;
-                        found = true; break;
+                for (MaxScoreNode* t = tempHead; t; t = t->next) {
+                    if (t->subCode == c->data.subjectCode) {
+                        // Nếu đã học môn này và điểm mới cao hơn -> cập nhật
+                        if (c->data.score4 > t->maxScore4) {
+                            t->maxScore4 = c->data.score4;
+                        }
+                        found = true; 
+                        break;
                     }
                 }
-                if (!found && mapSize < 200) {
-                    tempMap[mapSize++] = {c->data.subjectCode, c->data.score4, sub->data.credits, true};
+                
+                // Nếu chưa có trong danh sách tạm, cấp phát động và chèn vào đầu danh sách (O(1))
+                if (!found) {
+                    MaxScoreNode* newNode = new MaxScoreNode(c->data.subjectCode, c->data.score4, sub->data.credits);
+                    newNode->next = tempHead;
+                    tempHead = newNode;
                 }
             }
         }
     
-        float sumW = 0.0f; int sumC = 0;
-        for (int i = 0; i < mapSize; i++) {
-            sumW += tempMap[i].maxS4 * tempMap[i].credits;
-            sumC += tempMap[i].credits;
+        // 2. Duyệt danh sách tạm để tính tổng điểm trọng số và tổng tín chỉ
+        float sumW = 0.0f; 
+        int sumC = 0;
+        MaxScoreNode* current = tempHead;
+        
+        while (current) {
+            sumW += current->maxScore4 * current->credits;
+            sumC += current->credits;
+            current = current->next;
         }
+        
+        // 3. Trả kết quả qua tham chiếu
         outCPA = (sumC > 0) ? (sumW / sumC) : 0.0f;
         outCredits = sumC;
+
+        // 4. BẮT BUỘC: Giải phóng bộ nhớ động của danh sách tạm để tránh Memory Leak
+        while (tempHead) {
+            MaxScoreNode* tmp = tempHead;
+            tempHead = tempHead->next;
+            delete tmp;
+        }
     }
 
         void calcSemesterGPA(const std::string& sid,
@@ -439,35 +463,43 @@ public:
         tHead = sortTmp(tHead);
 
         // 3. In dữ liệu
-        int cntA=0, cntB=0, cntC=0, cntD=0, cntF=0;
+        int cA_plus = 0, cA = 0, cB_plus = 0, cB = 0;
+        int cC_plus = 0, cC = 0, cD_plus = 0, cD = 0, cF = 0;
+
         for (TmpNode* t = tHead; t; t = t->next) {
             SNode* sv = stm.findById(t->sid);
             std::string nm = sv ? sv->data.name : "???";
             std::string cl = sv ? sv->data.className : "???";
+            
             std::cout << Utils::col(t->sid, 13)
-                      << Utils::col(nm, 26)
-                      << Utils::col(cl, 12)
-                      << std::setw(7) << std::fixed << std::setprecision(1) << t->s10 << "  "
-                      << std::setw(5) << std::fixed << std::setprecision(1) << t->s4  << "  "
-                      << Utils::col(t->ltr, 5) << "\n";
-            if      (t->ltr == "A")  cntA++;
-            else if (t->ltr[0]=='B') cntB++;
-            else if (t->ltr[0]=='C') cntC++;
-            else if (t->ltr[0]=='D') cntD++;
-            else                     cntF++;
+                    << Utils::col(nm, 26)
+                    << Utils::col(cl, 12)
+                    << std::setw(7) << std::fixed << std::setprecision(1) << t->s10 << "  "
+                    << std::setw(5) << std::fixed << std::setprecision(1) << t->s4  << "  "
+                    << Utils::col(t->ltr, 5) << "\n";
+                    
+            // 2. Phân loại chính xác 100% theo chuỗi ký tự
+            if      (t->ltr == "A+") cA_plus++;
+            else if (t->ltr == "A")  cA++;
+            else if (t->ltr == "B+") cB_plus++;
+            else if (t->ltr == "B")  cB++;
+            else if (t->ltr == "C+") cC_plus++;
+            else if (t->ltr == "C")  cC++;
+            else if (t->ltr == "D+") cD_plus++;
+            else if (t->ltr == "D")  cD++;
+            else                     cF++;
         }
 
-        // Giải phóng tạm
+        // Giải phóng bộ nhớ động
         while (tHead) { TmpNode* t = tHead; tHead = t->next; delete t; }
 
-        if (total == 0) { std::cout << "  (Chưa có sinh viên nào)\n"; Utils::line(); return; }
-
+        // 4. In tổng kết báo cáo
         Utils::line();
         std::cout << "  Số sinh viên    : " << total << "\n"
-                  << "  Điểm TB lớp     : " << std::fixed << std::setprecision(2) << (sum / total) << "\n";
-        std::cout << "  Phân bổ xếp loại: "
-                  << "A=" << cntA << "  B=" << cntB << "  C=" << cntC
-                  << "  D=" << cntD << "  F=" << cntF << "\n";
+                << "  Điểm TB lớp     : " << std::fixed << std::setprecision(2) << (sum / total) << "\n";
+        std::cout << "  Phân bổ xếp loại:\n"
+                << "  A+: " << cA_plus << " | A: " << cA << " | B+: " << cB_plus << " | B: " << cB << "\n"
+                << "  C+: " << cC_plus << " | C: " << cC << " | D+: " << cD_plus << " | D: " << cD << " | F: " << cF << "\n";
         Utils::line();
     }
 
