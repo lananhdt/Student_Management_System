@@ -315,12 +315,7 @@ class Menu {
                 std::string code = Utils::inputLine("  Nhập mã học phần cần xoá: ");
                 if (!sbm.findByCode(code)) { std::cout << "  [!] Không tìm thấy mã học phần: " << code << "\n"; continue; }
                 
-                // Cảnh báo nếu đã có dữ liệu điểm
-                if (scm.hasScoreForSubject(code)) {
-                    std::cout << "  [!] CẢNH BÁO: Học phần này đã có bản ghi điểm sinh viên.\n";
-                    std::cout << "  Bạn vẫn muốn xoá học phần này? (y/n): ";
-                } else
-                    std::cout << "  Xác nhận xóa học phần " << code << "? (y/n): ";
+                std::cout << "  Xác nhận xóa học phần " << code << "? (y/n): ";
                 std::string cf; std::getline(std::cin, cf);
                 if (Utils::trim(cf)=="y" || Utils::trim(cf)=="Y") {
                     sbm.remove(code);
@@ -364,6 +359,7 @@ class Menu {
                         std::cout << "  [!] LỖI: Lớp học phần này đã tồn tại. Vui lòng nhập mã khác.\n";
                     else break;
                 }
+                cs.semester = Utils::inputRequiredLine("  Nhập Học kỳ (VD: 20251): ", "Học kỳ");
                 
                 if (cm.addClass(cs)) {
                     FileManager::saveClasses("classes.txt", "class_roster.txt", cm);
@@ -426,6 +422,14 @@ class Menu {
 
                 std::string subCode = cn->data.subjectCode;
                 SubNode* subNode = sbm.findByCode(subCode);
+                if (!subNode) {
+                    std::cout << "  [!] Không tìm thấy học phần.\n";
+                    continue;
+                }
+                if (!subNode->data.isActive) {
+                    std::cout << "  [!] LỖI: Học phần này đã bị ngừng dạy. Không thể nhập điểm mới!\n";
+                    continue;
+                }
                 std::string subName = subNode ? subNode->data.name : "  [!] Không tìm thấy học phần.";
                 std::cout << "  => Học phần: " << subCode << " - " << subName << "\n";
 
@@ -446,25 +450,23 @@ class Menu {
                     continue;
                 }
 
-                float a, b;
-                while (true) {
-                    a = Utils::inputFloat("  Nhập trọng số chuyên cần [0.0 - 1.0]: ", 0.0f, 1.0f);
-                    b = Utils::inputFloat("  Nhập trọng số giữa kỳ    [0.0 - 1.0]: ", 0.0f, 1.0f);
-                    
-                    // Kiểm tra tổng trọng số
-                    if (a + b != 1.0f) std::cout << "  [!] LỖI: Trọng số không hợp lệ. Vui lòng nhập lại.\n";
-                    else break;
-                }
+                float a = cn->data.wGK; 
+                float b = cn->data.wFinal;
+
+                std::cout << "  => Trọng số: Quá trình = " 
+                          << (a * 100) << "%, Cuối kỳ = " << (b * 100) << "%\n";
 
                 float cc = Utils::inputFloat("  Điểm chuyên cần (0-10): ", 0.0f, 10.0f);
+                float tc = Utils::inputFloat("  Điểm tích cực (0-10): ", 0.0f, 10.0f);
                 float gk = Utils::inputFloat("  Điểm giữa kỳ    (0-10): ", 0.0f, 10.0f);
                 float ck = Utils::inputFloat("  Điểm cuối kỳ    (0-10): ", 0.0f, 10.0f);
                 
-                float s10 = Utils::calculateFinalScore(cc, gk, ck, a, b);
+                float s10 = Utils::calculateFinalScore(cc, tc, gk, ck, 
+                    cn->data.wCC, cn->data.wTC, cn->data.wGK, cn->data.wFinal);
                 std::cout << "  => Điểm hệ 10: " << s10 << "\n";
                 float g4  = Utils::toGPA4(s10);
 
-                scm.addOrUpdate(sid, subCode, semester, cc, gk, ck, s10, stm, sbm);
+                scm.addOrUpdate(sid, subCode, semester, cc, tc, gk, ck, s10, stm, sbm);
                 FileManager::saveScores("scores.txt", scm);
                 std::cout << "  [OK] Đã lưu điểm: " << s10
                           << " (Hệ 4: " << Utils::f2(g4)
@@ -484,25 +486,7 @@ class Menu {
 
             else if (ch == 3) {
                 Utils::title("     TOÀN BỘ BẢN GHI ĐIỂM");
-                if (!scm.getHead())
-                    std::cout << "  (Chưa có bản ghi điểm nào)\n";
-                else {
-                    std::cout << Utils::col("MSSV", 12)
-                              << Utils::col("Mã học phần", 15)
-                              << Utils::col("Điểm 10", 10)
-                              << Utils::col("Điểm 4", 10)
-                              << Utils::col("Điểm chữ", 5) << "\n";
-                    Utils::line();
-
-                    for (ScNode* c = scm.getHead(); c; c = c->next) {
-                        std::cout << Utils::col(c->data.studentId,   12)
-                                  << Utils::col(c->data.subjectCode, 15)
-                                  << Utils::col(Utils::f2(c->data.score10), 10)
-                                  << Utils::col(Utils::f2(c->data.score4), 10)
-                                  << Utils::col(c->data.letter, 5) << "\n";
-                    }
-                    Utils::line();
-                }
+                scm.printAll(); 
             }
             
             else std::cout << "  [!] Lựa chọn không hợp lệ.\n";
