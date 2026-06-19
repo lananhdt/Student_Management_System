@@ -10,8 +10,9 @@
 #include <string>
 
 class StudentHashMap {
-    static const int CAP = 251; // số nguyên tố
-    HNodeS* table[CAP];
+    int CAP;          
+    int size;         
+    HNodeS** table;  
 
     int hash(const std::string& k) const {
     // =============================================================================================
@@ -27,13 +28,36 @@ class StudentHashMap {
         return (int)h;
     }
 
+    void rehash() {
+        int oldCap = CAP;
+        CAP = CAP * 2 + 1; // Nhân đôi kích thước và đảm bảo là số lẻ
+        HNodeS** newTable = new HNodeS*[CAP](); // Cấp phát mảng mới chứa nullptr
+
+        for (int i = 0; i < oldCap; i++) {
+            HNodeS* c = table[i];
+            while (c) {
+                HNodeS* nextNode = c->next;
+                int newIdx = hash(c->key);
+                // Chèn node cũ vào đầu bucket mới
+                c->next = newTable[newIdx];
+                newTable[newIdx] = c;
+                c = nextNode;
+            }
+        }
+        delete[] table; // Giải phóng mảng cũ
+        table = newTable; // Cập nhật mảng mới
+    }
+
 public:
-    StudentHashMap()  { for (int i = 0; i < CAP; i++) table[i] = nullptr; }
+    StudentHashMap() : CAP(251), size(0) { 
+        table = new HNodeS*[CAP](); // Khởi tạo mảng động
+    }
     ~StudentHashMap() {
         for (int i = 0; i < CAP; i++) {
             HNodeS* c = table[i];
             while (c) { HNodeS* t = c; c = c->next; delete t; }
         }
+        delete[] table;
     }
 
     void put(const std::string& k, SNode* v) {
@@ -46,11 +70,13 @@ public:
     //      Không có giá trị trả về (void).
     // =============================================================================================
 
+        if (size >= CAP * 0.75) {rehash();}
         int i = hash(k);
         for (HNodeS* c = table[i]; c; c = c->next)
             if (c->key == k) { c->val = v; return; }
         HNodeS* n = new HNodeS(k, v);
         n->next = table[i]; table[i] = n;
+        size++;
     }
 
     SNode* get(const std::string& k) const {
@@ -82,7 +108,9 @@ public:
         while (c) {
             if (c->key == k) {
                 if (p) p->next = c->next; else table[i] = c->next;
-                delete c; return;
+                delete c; 
+                size--;
+                return;
             }
             p = c; c = c->next;
         }
@@ -95,8 +123,9 @@ public:
 // =============================================================================================
 
 class SubjectHashMap {
-    static const int CAP = 127;
-    HNodeSub* table[CAP];
+    int CAP;
+    int size;
+    HNodeSub** table;
 
     int hash(const std::string& k) const {
     // =============================================================================================
@@ -112,13 +141,33 @@ class SubjectHashMap {
         return (int)h;
     }
 
+    void rehash() {
+        int oldCap = CAP;
+        CAP = CAP * 2 + 1; 
+        HNodeSub** newTable = new HNodeSub*[CAP](); 
+
+        for (int i = 0; i < oldCap; i++) {
+            HNodeSub* c = table[i];
+            while (c) {
+                HNodeSub* nextNode = c->next;
+                int newIdx = hash(c->key);
+                c->next = newTable[newIdx];
+                newTable[newIdx] = c;
+                c = nextNode;
+            }
+        }
+        delete[] table; 
+        table = newTable; 
+    }
+
 public:
-    SubjectHashMap()  { for (int i = 0; i < CAP; i++) table[i] = nullptr; }
+    SubjectHashMap() : CAP(127), size(0) {table = new HNodeSub*[CAP](); }
     ~SubjectHashMap() {
         for (int i = 0; i < CAP; i++) {
             HNodeSub* c = table[i];
             while (c) { HNodeSub* t = c; c = c->next; delete t; }
         }
+        delete[] table;
     }
 
     void put(const std::string& k, SubNode* v) {
@@ -131,11 +180,13 @@ public:
     //      Không có giá trị trả về (void).
     // =============================================================================================
 
+        if (size >= CAP * 0.75){ rehash(); }
         int i = hash(k);
         for (HNodeSub* c = table[i]; c; c = c->next)
             if (c->key == k) { c->val = v; return; }
         HNodeSub* n = new HNodeSub(k, v);
         n->next = table[i]; table[i] = n;
+        size++;
     }
 
     SubNode* get(const std::string& k) const {
@@ -167,7 +218,9 @@ public:
         while (c) {
             if (c->key == k) {
                 if (p) p->next = c->next; else table[i] = c->next;
-                delete c; return;
+                delete c; 
+                size--;
+                return;
             }
             p = c; c = c->next;
         }
