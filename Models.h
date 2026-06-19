@@ -31,6 +31,7 @@ struct Score {
     std::string subjectCode; // Mã học phần
     std::string semester;    // Học kỳ (VD: 20251)
     float       cc;          // Điểm chuyên cần
+    float       tc;          // Điểm tích cực
     float       gk;          // Điểm giữa kỳ
     float       ck;          // Điểm cuối kỳ
     float       score10;     // Điểm hệ 10
@@ -48,9 +49,12 @@ struct ClassSession {
     std::string classCode;  // Mã lớp học phần (VD: 158241)
     std::string subjectCode;// Mã môn học (VD: MI3310)
     std::string semester;   // Học kỳ (VD: 20251)
+    float wCC;              // Trọng số Chuyên cần
+    float wTC;              // Trọng số Tích cực
+    float wGK;              // Trọng số Giữa kỳ
+    float wFinal;           // Trọng số Cuối kỳ
     RosterNode* rosterHead; // Danh sách liên kết đơn chứa MSSV
-    
-    ClassSession() : rosterHead(nullptr) {}
+    ClassSession() : wCC(0.1f), wTC(0.1f), wGK(0.3f), wFinal(0.5f), rosterHead(nullptr) {}
 };
 
 // =================================== Node Doubly Linked List ===================================
