@@ -79,7 +79,7 @@ struct ScNode {  // Score node
     ScNode(const Score& s) : data(s), prev(nullptr), next(nullptr) {}
 };
 
-struct ClassNode {
+struct ClassNode { // Class node
     ClassSession data;
     ClassNode* prev;
     ClassNode* next;
