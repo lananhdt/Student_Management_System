@@ -30,7 +30,7 @@ class StudentHashMap {
 
     void rehash() {
         int oldCap = CAP;
-        CAP = CAP * 2 + 1; // Nhân đôi kích thước và đảm bảo là số lẻ
+        CAP = CAP * 2 + 1;
         HNodeS** newTable = new HNodeS*[CAP](); // Cấp phát mảng mới chứa nullptr
 
         for (int i = 0; i < oldCap; i++) {
@@ -38,14 +38,13 @@ class StudentHashMap {
             while (c) {
                 HNodeS* nextNode = c->next;
                 int newIdx = hash(c->key);
-                // Chèn node cũ vào đầu bucket mới
                 c->next = newTable[newIdx];
                 newTable[newIdx] = c;
                 c = nextNode;
             }
         }
-        delete[] table; // Giải phóng mảng cũ
-        table = newTable; // Cập nhật mảng mới
+        delete[] table;
+        table = newTable;
     }
 
 public:
