@@ -23,7 +23,7 @@ class FileManager {
 public:
     static const char SEP = '|';
 
-    // Tách chuỗi dữ liệu từ file dựa trên ký tự phân cách (separator)
+    // Tách chuỗi dữ liệu từ file dựa trên ký tự phân cách
     static void split(const std::string& line, char sep,
                     std::string out[], int maxParts, int& got) {
         got = 0;
@@ -116,7 +116,7 @@ public:
     }
 
     // ==================================================================
-    // QUẢN LÝ ĐỌC/GHI LỚP HỌC PHẦN (Quay về 3 trường cơ bản)
+    // QUẢN LÝ ĐỌC/GHI LỚP HỌC PHẦN
     // ==================================================================
     static bool saveClasses(const std::string& classPath, const std::string& rosterPath, const ClassManager& cm) {        
         std::ofstream fc(classPath);
