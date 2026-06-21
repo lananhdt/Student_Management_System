@@ -231,19 +231,19 @@ public:
     // HÀM ĐỒNG BỘ HÓA TỔNG THỂ
     // ==================================================================
     static void loadAll(StudentManager& stm, SubjectManager& sbm, ClassManager& cm, ScoreManager& scm) {
-        loadStudents("students.txt", stm);
-        loadSubjects("subjects.txt", sbm);
-        loadClasses ("classes.txt", "class_roster.txt", cm, stm);
-        loadScores  ("scores.txt",   scm, stm, sbm);
+        loadStudents("data/students.txt", stm);
+        loadSubjects("data/subjects.txt", sbm);
+        loadClasses ("data/classes.txt", "data/class_roster.txt", cm, stm);
+        loadScores  ("data/scores.txt",   scm, stm, sbm);
     }
 
     static void saveAll(const StudentManager& stm,
                         const SubjectManager& sbm,
                         const ClassManager&   cm,
                         const ScoreManager&   scm) {
-        saveStudents("students.txt", stm);
-        saveSubjects("subjects.txt", sbm);
-        saveClasses ("classes.txt", "class_roster.txt", cm);
-        saveScores  ("scores.txt",   scm);
+        saveStudents("data/students.txt", stm);
+        saveSubjects("data/subjects.txt", sbm);
+        saveClasses ("data/classes.txt", "data/class_roster.txt", cm);
+        saveScores  ("data/scores.txt",   scm);
     }
 };
