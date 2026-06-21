@@ -245,9 +245,9 @@ public:
 
         // Tìm bản ghi điểm đã có
         for (ScNode* c = head; c; c = c->next) {
-            if (c->data.studentId == sid && c->data.subjectCode == subCode) {
-                c->data.semester = semester;
+            if (c->data.studentId == sid && c->data.subjectCode == subCode && c->data.semester == semester) {
                 c->data.cc       = cc;
+                c->data.tc       = tc;
                 c->data.gk       = gk;
                 c->data.ck       = ck;
                 c->data.score10  = s10;
