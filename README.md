@@ -1,495 +1,188 @@
 # Hệ Thống Quản Lý Sinh Viên & Điểm Số
-### Student Management System – Console Application
 
 ---
 
 ## Mục lục
 
 1. [Mô tả tổng quan](#1-mô-tả-tổng-quan)
-2. [Tính năng](#2-tính-năng)
+2. [Tính năng hệ thống](#2-tính-năng-hệ-thống)
 3. [Yêu cầu hệ thống](#3-yêu-cầu-hệ-thống)
 4. [Cấu trúc dự án](#4-cấu-trúc-dự-án)
 5. [Cấu trúc dữ liệu & Thuật toán](#5-cấu-trúc-dữ-liệu--thuật-toán)
 6. [Định dạng file dữ liệu](#6-định-dạng-file-dữ-liệu)
 7. [Hướng dẫn cài đặt & Biên dịch](#7-hướng-dẫn-cài-đặt--biên-dịch)
-8. [Hướng dẫn sử dụng](#8-hướng-dẫn-sử-dụng)
-9. [Sơ đồ menu](#9-sơ-đồ-menu)
-10. [Logic nghiệp vụ](#10-logic-nghiệp-vụ)
-11. [Ví dụ Input / Output](#11-ví-dụ-input--output)
-12. [Lưu ý & Giới hạn](#12-lưu-ý--giới-hạn)
+8. [Logic nghiệp vụ](#8-logic-nghiệp-vụ)
+9. [Lưu ý & Giới hạn](#9-lưu-ý--giới-hạn)
 
 ---
 
 ## 1. Mô tả tổng quan
 
-Chương trình quản lý sinh viên và kết quả học tập viết bằng **C++ thuần (chuẩn C++11)**, chạy hoàn toàn trên **terminal console**. Toàn bộ cấu trúc dữ liệu và thuật toán được **tự cài đặt từ đầu** — không sử dụng bất kỳ container (`std::list`, `std::map`, `std::unordered_map`, `std::sort`…) hay thư viện ngoài nào.
+Chương trình quản lý sinh viên và kết quả học tập được phát triển bằng **C++ thuần (chuẩn C++11)**, vận hành qua giao diện dòng lệnh (CLI). Toàn bộ cấu trúc dữ liệu và thuật toán được tự cài đặt từ đầu - không sử dụng thư viện cấu trúc dữ liệu có sẵn (như `std::list`, `std::map`, `std::sort`…). 
 
-Dữ liệu được lưu trữ bền vững trong **3 file text thuần** và tự động tải lên khi khởi động, lưu xuống khi thực hiện mỗi thao tác ghi.
+Hệ thống áp dụng kiến trúc phân tầng OOP chặt chẽ, tối ưu hóa tốc độ truy xuất bằng Bảng băm (Hash Map) và quản lý lưu trữ bền vững qua các tệp tin cục bộ.
 
 ---
 
-## 2. Tính năng
+## 2. Tính năng hệ thống
+
+Hệ thống được chia thành 4 phân hệ (module) chính:
 
 ### 2.1 Quản lý Sinh viên
-| # | Tính năng |
-|---|-----------|
-| ✅ | Thêm sinh viên mới (MSSV, họ tên, lớp, ngày sinh, ngành, email, trạng thái) |
-| ✅ | Sửa thông tin sinh viên (giữ nguyên MSSV) |
-| ✅ | Xóa sinh viên (có xác nhận) |
-| ✅ | Xem danh sách toàn bộ sinh viên |
-| ✅ | Tìm kiếm theo MSSV — O(1) qua Hash Map |
-| ✅ | Tìm kiếm theo họ tên (chứa từ khóa) |
-| ✅ | Sắp xếp danh sách theo MSSV tăng dần |
-| ✅ | Sắp xếp danh sách theo họ tên tăng dần |
+- Thêm mới, cập nhật thông tin sinh viên.
+- **Xóa mềm (Soft Delete):** Đổi trạng thái thành "Đã nghỉ học", bảo toàn lịch sử dữ liệu.
+- Tìm kiếm tức thời theo MSSV O(1) qua Hash Map.
+- Tìm kiếm tương đối theo họ tên (String Matching).
+- Sắp xếp danh sách theo MSSV hoặc Họ tên (Merge Sort O(N log N)).
 
-### 2.2 Quản lý Môn học
-| # | Tính năng |
-|---|-----------|
-| ✅ | Thêm môn học (mã môn, tên môn, số tín chỉ) |
-| ✅ | Sửa thông tin môn học |
-| ✅ | Xóa môn học |
-| ✅ | Xem danh sách môn học |
-| ✅ | Tìm kiếm môn học theo mã môn — O(1) |
+### 2.2 Quản lý Học phần & Lớp học phần
+- Quản lý danh mục Môn học: Thêm, sửa, vô hiệu hóa môn học.
+- **Quản lý Lớp học phần:** Tạo lớp thực tế mở trong học kỳ, liên kết với môn học.
+- Thiết lập trọng số đánh giá linh hoạt cho từng lớp (Chuyên cần, Tích cực, Giữa kỳ, Cuối kỳ).
+- Thêm sinh viên vào danh sách lớp và xuất danh sách lớp.
 
 ### 2.3 Quản lý Điểm số
-| # | Tính năng |
-|---|-----------|
-| ✅ | Nhập điểm theo MSSV + mã môn học (hệ 10) |
-| ✅ | Tự động tính điểm hệ 4 và ký hiệu chữ (A, B+, B, …) |
-| ✅ | Cập nhật điểm (ghi đè nếu đã tồn tại) |
-| ✅ | Xóa bản ghi điểm |
-| ✅ | Xem toàn bộ bản ghi điểm |
+- Nhập điểm thành phần theo Lớp học phần.
+- Hệ thống tự động nội suy điểm hệ 10 dựa trên trọng số của lớp.
+- Tự động quy đổi điểm hệ 4 và điểm chữ chuẩn Bách Khoa.
+- Cập nhật và xóa bản ghi điểm.
 
-### 2.4 Báo cáo & Tìm kiếm
-| # | Tính năng |
-|---|-----------|
-| ✅ | Bảng điểm chi tiết của 1 sinh viên (kèm GPA tích lũy + xếp loại) |
-| ✅ | Bảng điểm lớp học phần theo mã môn (sắp xếp điểm giảm dần, thống kê phân bố) |
-| ✅ | Bảng xếp hạng toàn trường theo GPA tích lũy (giảm dần) |
+### 2.4 Báo cáo & Thống kê
+- Trích xuất bảng điểm chi tiết của cá nhân, tự động tính **CPA tích lũy** và xếp loại học lực.
+- Trích xuất bảng điểm của Lớp học phần, báo cáo phổ điểm (A+, A, B+...).
+- Lập bảng xếp hạng GPA tích lũy toàn trường (Sắp xếp bằng Merge Sort trên Singly Linked List).
 
 ---
 
 ## 3. Yêu cầu hệ thống
 
-### Phần cứng (tối thiểu)
-| Thành phần | Yêu cầu |
-|---|---|
-| CPU | Bất kỳ, x86 / x86-64 / ARM |
-| RAM | 16 MB trở lên (chương trình rất nhẹ) |
-| Ổ đĩa | 5 MB trống (cho binary + data files) |
-| Màn hình | Terminal hỗ trợ UTF-8, rộng ≥ 80 cột |
+### Phần cứng
+- **CPU:** Kiến trúc x86 / x86-64 / ARM.
+- **RAM:** Cực kỳ tối ưu, chỉ yêu cầu ≥ 16 MB.
+- **Ổ đĩa:** Khoảng 5 MB trống cho thực thi và dữ liệu.
+- **Hiển thị:** Terminal Console hỗ trợ mã hóa UTF-8.
 
 ### Phần mềm
-| Thành phần | Yêu cầu |
-|---|---|
-| Hệ điều hành | Windows / Linux / macOS |
-| Trình biên dịch | `g++` (GCC ≥ 5.0) hoặc `clang++` ≥ 3.5, hỗ trợ C++11 |
-| Thư viện | Chỉ C++ Standard Library (`<iostream>`, `<fstream>`, `<string>`, `<iomanip>`, `<sstream>`) |
-
-> **Không cần** cài thêm bất kỳ thư viện bên ngoài nào.
+- **Trình biên dịch:** `g++` (GCC ≥ 5.0) hoặc MSVC, hỗ trợ chuẩn C++11.
+- **Thư viện:** Khai thác hoàn toàn trên C++ Standard Library (`<iostream>`, `<fstream>`, `<string>`, `<iomanip>`). Không yêu cầu Dependencies bên ngoài.
 
 ---
 
 ## 4. Cấu trúc dự án
 
-```
+Dự án áp dụng mô hình phân tách thư mục chuẩn mực, chia tách rõ ràng mã nguồn và tệp dữ liệu:
+
+```text
 student_management_system/
 │
-├── main.cpp              # Entry point: load → menu → save
+├── data/                 # Thư mục chứa CSDL (Bắt buộc phải tạo trước khi chạy)
+│   ├── students.txt      # Lưu trữ danh sách Sinh viên
+│   ├── subjects.txt      # Lưu trữ danh mục Môn học
+│   ├── classes.txt       # Cấu hình Lớp học phần & Trọng số
+│   ├── class_roster.txt  # Danh sách sinh viên đăng ký lớp
+│   └── scores.txt        # Lưu trữ Điểm số
 │
-├── Models.h              # Tất cả struct dữ liệu và node
-├── Utils.h               # Hàm tiện ích: chuyển điểm, nhập liệu, hiển thị
-├── HashMap.h             # Hash Map tự cài (StudentHashMap + SubjectHashMap)
-├── StudentManager.h      # Quản lý sinh viên: DLL + MergeSort + CRUD
-├── SubjectManager.h      # Quản lý môn học: DLL + CRUD
-├── ScoreManager.h        # Quản lý điểm: DLL + tính GPA + báo cáo
-├── FileManager.h         # Đọc/ghi 3 file text
-├── Menu.h                # Vòng lặp menu console 4 tầng
+├── src/                  # Thư mục chứa Mã nguồn
+│   ├── main.cpp          # Entry point điều hướng hệ thống
+│   ├── Models.h          # Cấu trúc Entities & Nodes (SNode, SubNode, ClassNode...)
+│   ├── Utils.h           # Core logic: Quy đổi điểm, Validate nhập liệu, Định dạng in
+│   ├── HashMap.h         # Cấu trúc Bảng băm (StudentHashMap, SubjectHashMap)
+│   ├── StudentManager.h  # Module xử lý nghiệp vụ Sinh viên
+│   ├── SubjectManager.h  # Module xử lý nghiệp vụ Môn học
+│   ├── ClassManager.h    # Module tổ chức Lớp học phần & Roster
+│   ├── ScoreManager.h    # Module tính toán GPA & Báo cáo
+│   ├── FileManager.h     # Giao tiếp I/O đọc/ghi tệp tin
+│   └── Menu.h            # Vòng lặp điều hướng giao diện CLI
 │
-├── students.txt          # [Tự sinh] Dữ liệu sinh viên
-├── subjects.txt          # [Tự sinh] Dữ liệu môn học
-└── scores.txt            # [Tự sinh] Dữ liệu điểm số
-```
-
-**Tổng số dòng code:** ~1.432 dòng (không tính file data)
-
-### Sơ đồ phụ thuộc giữa các file
-
-```
-main.cpp
-  └── Menu.h
-        ├── StudentManager.h
-        │     ├── Models.h
-        │     ├── HashMap.h
-        │     └── Utils.h
-        ├── SubjectManager.h
-        │     ├── Models.h
-        │     ├── HashMap.h
-        │     └── Utils.h
-        ├── ScoreManager.h
-        │     ├── StudentManager.h
-        │     ├── SubjectManager.h
-        │     └── Utils.h
-        └── FileManager.h
-              ├── StudentManager.h
-              ├── SubjectManager.h
-              └── ScoreManager.h
+└── README.md
 ```
 
 ---
 
 ## 5. Cấu trúc dữ liệu & Thuật toán
 
-### 5.1 Doubly Linked List (Danh sách liên kết đôi)
-Tự cài đặt với 3 loại node riêng biệt: `SNode` (sinh viên), `SubNode` (môn học), `ScNode` (điểm). Mỗi node giữ con trỏ `prev` và `next`.
+### 5.1 Các cấu trúc dữ liệu tự cài đặt
+- **Doubly Linked List (Danh sách liên kết đôi):** Lưu trữ thực thể chính (`SNode`, `SubNode`, `ScNode`, `ClassNode`). Cung cấp khả năng xóa/chèn với chi phí dời bộ nhớ là O(1) khi biết vị trí.
+- **Singly Linked List (Danh sách liên kết đơn):** Quản lý danh sách lớp (`RosterNode`) và làm vùng nhớ đệm trung gian cho các tác vụ tính toán (`RankNode`, `MaxScoreNode`), ngăn chặn Memory Leak.
+- **Hash Map (Bảng băm):** Triển khai thuật toán *Polynomial Rolling Hash*, giải quyết va chạm bằng *Separate Chaining*. Tích hợp cơ chế tự động mở rộng mảng (Rehashing) khi *Load Factor* đạt 75%. Đảm bảo truy xuất định danh O(1).
 
-```
-NULL ← [SV001|An] ⟺ [SV002|Binh] ⟺ [SV003|Cuong] → NULL
-         head                              tail
-```
-
-**Ưu điểm:** Chèn/xóa O(1) khi có con trỏ node, duyệt hai chiều.
-
-### 5.2 Hash Map (Bảng băm — Separate Chaining)
-- `StudentHashMap`: capacity = 251 bucket (số nguyên tố), key = MSSV → `SNode*`
-- `SubjectHashMap`: capacity = 127 bucket, key = mã môn → `SubNode*`
-- Hàm băm: `h = (h * 31 + c) % capacity` (Polynomial Rolling Hash)
-- Giải quyết đụng độ: Chaining bằng linked list trên mỗi bucket
-
-**Tra cứu sinh viên / môn học: O(1) trung bình**
-
-```
-hash("SV001") = 47
-table[47] → [SV001 → node*] → [SV099 → node*] → NULL
-```
-
-### 5.3 Merge Sort (Sắp xếp trộn)
-Tự cài đặt trên Doubly Linked List, đệ quy, **O(n log n)**.
-
-Hỗ trợ 2 tiêu chí cho sinh viên:
-- `sortById()` — sắp xếp tăng dần theo MSSV (so sánh chuỗi lexicographic)
-- `sortByName()` — sắp xếp tăng dần theo họ tên
-
-Thuật toán:
-```
-MergeSort(head):
-  1. Tìm node giữa bằng slow/fast pointer
-  2. Tách list thành 2 nửa
-  3. Đệ quy sort mỗi nửa
-  4. Merge 2 nửa đã sort
-  5. Rebuild prev links và cập nhật tail
-```
-
-### 5.4 Tính GPA tích lũy
-Áp dụng công thức **GPA có trọng số tín chỉ**:
-
-```
-GPA_tích_lũy = Σ(điểm_hệ_4 × tín_chỉ_môn) / Σ(tín_chỉ_môn)
-```
+### 5.2 Thuật toán sắp xếp (Merge Sort)
+Sử dụng tư duy "Con trỏ Nhanh - Chậm" (Slow-Fast Pointers) để cắt/nối danh sách liên kết bằng đệ quy. 
+- **Ưu điểm:** Duy trì độ ổn định (Stable Sort), độ phức tạp thời gian **O(N log N)**, độ phức tạp không gian **O(1)** — không tiêu tốn RAM tạo mảng phụ.
 
 ---
 
 ## 6. Định dạng file dữ liệu
 
-Các file dữ liệu được tự động tạo ra khi lưu lần đầu. Separator là ký tự `|` (pipe) để tránh xung đột với dấu phẩy trong tên.
+Hệ thống sử dụng ký tự phân cách `|` (Pipe) nhằm phân tách dữ liệu thô an toàn, tránh lỗi đứt gãy do dấu phẩy hay khoảng trắng.
 
-### `students.txt`
-```
-MSSV|Ho_va_ten|Lop|Ngay_sinh|Nganh|Email|Trang_thai
-```
-**Ví dụ:**
-```
-SV001|Nguyen Van An|CNPM-K65|01/01/2002|CNTT|an@edu.vn|Dang hoc
-SV002|Tran Thi Binh|KHMT-K65|15/05/2001|KHMT|binh@edu.vn|Dang hoc
-SV003|Le Hoang Cuong|ATTT-K64|20/03/2000|ATTT|cuong@edu.vn|Canh bao
-```
-
-**Trạng thái hợp lệ:** `Dang hoc` | `Bao luu` | `Canh bao` | `Tot nghiep`
-
-### `subjects.txt`
-```
-Ma_mon|Ten_mon_hoc|So_tin_chi
-```
-**Ví dụ:**
-```
-IT3040|Lap trinh huong doi tuong|3
-IT2020|Co so du lieu|3
-IT1010|Giai tich 1|2
-```
-
-### `scores.txt`
-```
-MSSV|Ma_mon|Diem_he_10
-```
-**Ví dụ:**
-```
-SV001|IT3040|8.5
-SV001|IT2020|7.0
-SV002|IT3040|9.0
-```
-> Điểm hệ 4 và ký hiệu chữ **không lưu vào file** — tính lại mỗi lần load để tránh dư thừa dữ liệu.
+- **`students.txt`:** `MSSV | Họ Tên | Lớp | Ngày Sinh | Ngành | Email | Trạng thái`
+- **`subjects.txt`:** `Mã môn | Tên môn | Tín chỉ | Trạng thái (1/0)`
+- **`classes.txt`:** `Mã lớp | Mã môn | Học kỳ | Trọng số CC | TS TC | TS GK | TS CK`
+- **`class_roster.txt`:** `Mã lớp | MSSV`
+- **`scores.txt`:** `MSSV | Mã môn | Học kỳ | Điểm CC | Điểm TC | Điểm GK | Điểm CK | Điểm hệ 10`
 
 ---
 
 ## 7. Hướng dẫn cài đặt & Biên dịch
 
-### Bước 1: Clone / tải source code
-```bash
-git clone https://github.com/your-repo/student_management_system.git
-cd student_management_system
-```
+### Bước 1: Chuẩn bị mã nguồn
+Tải toàn bộ mã nguồn về máy. Đảm bảo thư mục gốc (root) có tồn tại thư mục rỗng mang tên `data`. (Nếu chưa có, hãy tạo mới folder `data` để hệ thống có nơi lưu file).
 
 ### Bước 2: Biên dịch
+Mở terminal/cmd tại thư mục gốc của dự án.
+
+**Windows (Sử dụng MinGW/G++):**
+```bash
+g++ -std=c++11 -o system src/main.cpp
+```
 
 **Linux / macOS:**
 ```bash
-g++ -std=c++11 -o sms main.cpp
+g++ -std=c++11 -o system src/main.cpp
 ```
 
-**Windows (MinGW / MSYS2):**
+### Bước 3: Khởi chạy
 ```bash
-g++ -std=c++11 -o sms.exe main.cpp
-```
+# Trên Windows
+system.exe
 
-**Biên dịch với cảnh báo đầy đủ (khuyến nghị khi phát triển):**
-```bash
-g++ -std=c++11 -Wall -Wextra -o sms main.cpp
-```
-
-### Bước 3: Chạy chương trình
-```bash
-./sms          # Linux / macOS
-sms.exe        # Windows
-```
-
-> **Lưu ý:** Chạy chương trình từ thư mục chứa file `.cpp` để các file `students.txt`, `subjects.txt`, `scores.txt` được tạo đúng vị trí.
-
-### Bước 4 (tuỳ chọn): Chuẩn bị dữ liệu mẫu
-Nếu muốn chạy với dữ liệu có sẵn, tạo 3 file text trong cùng thư mục với binary theo định dạng ở mục 6.
-
----
-
-## 8. Hướng dẫn sử dụng
-
-### Quy tắc nhập liệu chung
-
-| Tình huống | Hành động |
-|---|---|
-| Nhập số nguyên | Gõ số rồi nhấn **Enter** |
-| Nhập chuỗi (tên, mã,...) | Gõ nội dung rồi nhấn **Enter** |
-| Nhập điểm | Số thực trong `[0.0, 10.0]`, VD: `8.5` |
-| Bỏ trống khi sửa | Nhấn **Enter** ngay để giữ giá trị cũ |
-| Xác nhận xóa | Gõ `y` hoặc `Y` để xác nhận, bất kỳ ký tự khác để hủy |
-| Quay lại | Chọn `[0]` ở bất kỳ menu nào |
-
-### Quy trình nhập liệu cơ bản
-
-**Bước khởi đầu được khuyến nghị:**
-1. Vào **Menu 2** → Thêm các môn học
-2. Vào **Menu 1** → Thêm sinh viên
-3. Vào **Menu 3** → Nhập điểm theo từng cặp MSSV + mã môn
-4. Vào **Menu 4** → Xem báo cáo
-
----
-
-## 9. Sơ đồ menu
-
-```
-[MENU CHÍNH]
-├── [1] Quản lý Sinh viên
-│     ├── [1] Xem danh sách sinh viên
-│     ├── [2] Thêm sinh viên mới
-│     ├── [3] Sửa thông tin sinh viên
-│     ├── [4] Xóa sinh viên
-│     ├── [5] Tìm kiếm theo MSSV
-│     ├── [6] Tìm kiếm theo họ tên
-│     ├── [7] Sắp xếp theo MSSV (Merge Sort)
-│     ├── [8] Sắp xếp theo họ tên (Merge Sort)
-│     └── [0] Quay lại
-│
-├── [2] Quản lý Môn học
-│     ├── [1] Xem danh sách môn học
-│     ├── [2] Thêm môn học mới
-│     ├── [3] Sửa thông tin môn học
-│     ├── [4] Xóa môn học
-│     ├── [5] Tìm kiếm theo mã môn
-│     └── [0] Quay lại
-│
-├── [3] Quản lý Điểm số
-│     ├── [1] Nhập / Cập nhật điểm
-│     ├── [2] Xóa điểm
-│     ├── [3] Xem toàn bộ bản ghi điểm
-│     └── [0] Quay lại
-│
-├── [4] Báo cáo & Tìm kiếm
-│     ├── [1] Bảng điểm của 1 sinh viên
-│     ├── [2] Bảng điểm lớp học phần
-│     ├── [3] Bảng xếp hạng GPA tích lũy
-│     └── [0] Quay lại
-│
-└── [0] Thoát (lưu tự động)
+# Trên Linux/macOS
+./system
 ```
 
 ---
 
-## 10. Logic nghiệp vụ
+## 8. Logic nghiệp vụ
 
-### 10.1 Bảng chuyển đổi điểm
+Hệ thống tuân thủ nghiêm ngặt Quy chế Đào tạo của Đại học Bách Khoa Hà Nội.
 
-| Điểm hệ 10 | Điểm hệ 4 | Ký hiệu chữ |
-|:-----------:|:---------:|:-----------:|
-| 9.0 – 10.0  | 4.0       | A           |
-| 8.5 – 8.9   | 3.7       | A-          |
-| 8.0 – 8.4   | 3.5       | B+          |
-| 7.5 – 7.9   | 3.0       | B           |
-| 7.0 – 7.4   | 2.5       | B-          |
-| 6.5 – 6.9   | 2.3       | C+          |
-| 6.0 – 6.4   | 2.0       | C           |
-| 5.5 – 5.9   | 1.7       | C-          |
-| 5.0 – 5.4   | 1.3       | D+          |
-| 4.0 – 4.9   | 1.0       | D           |
-| 0.0 – 3.9   | 0.0       | F           |
+### 8.1 Thang quy đổi điểm (Utils::toGPA4 & Utils::toLetter)
 
-*(Theo thang điểm Bộ Giáo dục & Đào tạo Việt Nam)*
+| Điểm hệ 10 | Điểm hệ 4 | Điểm chữ | Xếp loại tương ứng |
+|   :---:    |:---:|:---:|      :---:     |
+| 9.5 – 10.0 | 4.0 |  A+ |    Xuất sắc    |
+| 8.5 – 9.4  | 4.0 |  A  |    Xuất sắc    |
+| 8.0 – 8.4  | 3.5 |  B+ |      Giỏi      |
+| 7.0 – 7.9  | 3.0 |  B  |      Giỏi      |
+| 6.5 – 6.9  | 2.5 |  C+ |       Khá      |
+| 5.5 – 6.4  | 2.0 |  C  |   Trung bình   |
+| 5.0 – 5.4  | 1.5 |  D+ | Trung bình yếu |
+| 4.0 – 4.9  | 1.0 |  D  |       Yếu      |
+|   < 4.0    | 0.0 |  F  |       Kém      |
 
-### 10.2 Xếp loại học lực theo GPA tích lũy
+### 8.2 Cơ chế nội suy điểm Lớp học phần
+Điểm hệ 10 tự động tính toán ngay khi Giảng viên nhập điểm thành phần:
+> `Điểm H10 = (CC × TS_CC) + (TC × TS_TC) + (GK × TS_GK) + (CK × TS_CK)`
 
-| GPA tích lũy | Xếp loại   |
-|:------------:|:----------:|
-| ≥ 3.60       | Xuất sắc   |
-| 3.20 – 3.59  | Giỏi       |
-| 2.50 – 3.19  | Khá        |
-| 2.00 – 2.49  | Trung bình |
-| 1.00 – 1.99  | Yếu        |
-| < 1.00       | Kém        |
-
-### 10.3 Ràng buộc dữ liệu
-
-| Trường | Ràng buộc |
-|---|---|
-| MSSV | Không trùng lặp, không rỗng |
-| Mã môn | Không trùng lặp, không rỗng |
-| Điểm hệ 10 | Số thực trong `[0.0, 10.0]` |
-| Số tín chỉ | Số nguyên dương |
-| Cặp (MSSV, mã môn) | Mỗi sinh viên chỉ có 1 bản ghi điểm / môn học; nhập lại sẽ cập nhật |
+### 8.3 Tính điểm trung bình tích lũy (CPA)
+- Hệ thống tự động lọc lấy **điểm cao nhất** đối với các môn học được đăng ký học lại/học cải thiện.
+- Môn học đã bị vô hiệu hóa (ngừng giảng dạy) vẫn được bảo toàn để tính CPA lịch sử.
 
 ---
 
-## 11. Ví dụ Input / Output
+## 9. Lưu ý & Giới hạn
 
-### Ví dụ 1: Xem bảng điểm sinh viên SV001
-
-**Input (chọn menu):**
-```
-> 4       ← Báo cáo & Tìm kiếm
-> 1       ← Bảng điểm 1 sinh viên
-> SV001   ← Nhập MSSV
-```
-
-**Output:**
-```
-========================================================================
-                        BANG DIEM SINH VIEN
-========================================================================
-  MSSV    : SV001
-  Ho ten  : Nguyen Van An
-  Lop     : CNPM-K65
-  Nganh   : CNTT
-------------------------------------------------------------------------
-Ma mon    Ten mon hoc                   TC   Diem 10  Diem 4  Chu
-------------------------------------------------------------------------
-IT3040    Lap trinh huong doi tuong      3     8.5     3.7   A
-IT2020    Co so du lieu                  3     7.0     2.5   B
-IT1010    Giai tich 1                    2     9.0     4.0   A
-------------------------------------------------------------------------
-  Tong tin chi tich luy : 8
-  GPA tich luy (he 4)   : 3.33
-  Xep loai hoc luc       : Gioi
-------------------------------------------------------------------------
-```
-
-### Ví dụ 2: Bảng xếp hạng GPA toàn trường
-
-**Input:**
-```
-> 4       ← Báo cáo & Tìm kiếm
-> 3       ← Bảng xếp hạng GPA
-```
-
-**Output:**
-```
-========================================================================
-           BANG XEP HANG SINH VIEN THEO GPA TICH LUY
-========================================================================
-TT   MSSV         Ho va ten                 Lop         TC   GPA    Xep loai
-------------------------------------------------------------------------
-  1.  SV001        Nguyen Van An             CNPM-K65     8   3.33  Gioi
-  2.  SV002        Tran Thi Binh             KHMT-K65     8   3.24  Gioi
-  3.  SV003        Le Hoang Cuong            ATTT-K64     6   1.15  Yeu
-------------------------------------------------------------------------
-```
-
-### Ví dụ 3: Bảng điểm lớp học phần IT3040
-
-**Input:**
-```
-> 4         ← Báo cáo & Tìm kiếm
-> 2         ← Bảng điểm lớp học phần
-> IT3040    ← Mã môn
-```
-
-**Output:**
-```
-========================================================================
-                     BANG DIEM LOP HOC PHAN
-========================================================================
-  Ma mon  : IT3040
-  Ten mon : Lap trinh huong doi tuong
-  Tin chi : 3
-------------------------------------------------------------------------
-MSSV         Ho va ten                 Lop         Diem 10  Diem 4  Chu
-------------------------------------------------------------------------
-SV002        Tran Thi Binh             KHMT-K65       9.0    4.0   A
-SV001        Nguyen Van An             CNPM-K65       8.5    3.7   A
-SV003        Le Hoang Cuong            ATTT-K64       4.5    1.0   D+
-------------------------------------------------------------------------
-  So sinh vien : 3
-  Diem TB lop  : 7.33
-  Phan bo xep loai: A=2  B=0  C=0  D=1  F=0
-------------------------------------------------------------------------
-```
-
----
-
-## 12. Lưu ý & Giới hạn
-
-### Lưu ý khi sử dụng
-- **Encoding:** File dữ liệu dùng UTF-8. Nếu terminal Windows không hiển thị đúng tiếng Việt, chạy lệnh `chcp 65001` trước khi khởi động chương trình.
-- **Xóa sinh viên:** Bản ghi điểm của sinh viên đó **không tự động xóa theo**. Cần xóa thủ công trong Menu 3 nếu cần dọn dẹp dữ liệu.
-- **Xóa môn học:** Tương tự — bản ghi điểm của môn đó cần xóa riêng.
-- **Sửa dữ liệu file trực tiếp:** Được phép, nhưng phải đảm bảo đúng định dạng `|` separator và đủ số trường. Dòng lỗi định dạng sẽ tự động bị bỏ qua khi load.
-
-### Giới hạn kỹ thuật
-| Giới hạn | Giá trị |
-|---|---|
-| Số sinh viên tối đa | ~10.000 (giới hạn RAM, không giới hạn cứng) |
-| Số môn học tối đa | ~5.000 |
-| Capacity Hash Map sinh viên | 251 bucket |
-| Capacity Hash Map môn học | 127 bucket |
-| Độ dài chuỗi tên / mã | Không giới hạn cứng (`std::string`) |
-| Ký tự không được dùng trong dữ liệu | `\|` (pipe) — dùng làm separator |
-
-### Độ phức tạp thời gian các thao tác chính
-
-| Thao tác | Độ phức tạp |
-|---|---|
-| Tìm sinh viên / môn học theo mã | O(1) trung bình |
-| Thêm / Xóa sinh viên | O(1) |
-| Sắp xếp danh sách sinh viên | O(n log n) |
-| Tính GPA tích lũy 1 sinh viên | O(m) — m là số môn đã học |
-| In bảng xếp hạng n sinh viên | O(n²) insertion sort tạm |
-| Load / Save file | O(n) |
-
----
-
-*Dự án môn Cấu trúc Dữ liệu & Giải thuật — Ngôn ngữ C++11 — Tự cài đặt toàn bộ CTDL & thuật toán*
+- **Hiển thị tiếng Việt:** Đối với môi trường Windows, nếu console bị lỗi font chữ, hệ thống đã được tích hợp sẵn hàm đổi Code Page: `SetConsoleOutputCP(CP_UTF8);` trong `main.cpp`. Khuyến nghị sử dụng các terminal hiện đại như Windows Terminal, PowerShell 7 hoặc VSCode Terminal.
+- **Luồng quản lý:** Để nhập điểm thành công, bắt buộc người dùng phải tuân thủ quy trình nghiệp vụ: 
+  > Tạo Sinh viên → Tạo Môn học → Mở Lớp học phần → Thêm Sinh viên vào Lớp → Tiến hành nhập điểm.
