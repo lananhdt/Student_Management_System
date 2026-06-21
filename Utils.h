@@ -85,13 +85,13 @@ inline std::string trim(const std::string& s) {
     return s.substr(a, b - a + 1);
 }
 
-// Xóa bộ nhớ đệm của bàn phím để tránh lỗi nhập liệu
+// Xóa bộ nhớ đệm của bàn phím
 inline void clearCin() {
     std::cin.clear();
     std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 }
 
-// Hiển thị lời nhắc và đọc một dòng văn bản từ người dùng
+// Hiển thị lời nhắc và đọc văn bản từ người dùng
 inline std::string inputLine(const std::string& prompt) {
     std::cout << prompt;
     std::string s;
@@ -168,9 +168,6 @@ inline std::string inputRequiredLine(const std::string& prompt, const std::strin
 
 // ========================== UTF-8 helpers ==========================
  
-// Đếm số ký tự Unicode hiển thị thực sự (code points) trong UTF-8 string.
-// Mỗi ký tự tiếng Việt có dấu chiếm 2-3 bytes nhưng chỉ 1 cột hiển thị.
-// std::string::size() trả về bytes → col() cũ bị lệch với tiếng Việt có dấu.
 inline int utf8DisplayWidth(const std::string& s) {
     int count = 0;
     for (size_t i = 0; i < s.size(); ) {
@@ -184,7 +181,6 @@ inline int utf8DisplayWidth(const std::string& s) {
     return count;
 }
  
-// Cắt chuỗi UTF-8 về đúng displayWidth ký tự (không cắt giữa multi-byte char)
 inline std::string utf8Truncate(const std::string& s, int maxDisplay) {
     int count = 0;
     size_t i = 0;
@@ -199,23 +195,18 @@ inline std::string utf8Truncate(const std::string& s, int maxDisplay) {
     return s.substr(0, i);
 }
  
-// In chuỗi vào cột rộng w ký tự hiển thị, căn trái.
 inline std::string col(const std::string& s, int w) {
     int dispW = utf8DisplayWidth(s);
     if (dispW >= w) {
-        // Cắt tại w-1 ký tự hiển thị, thêm 1 space đệm
         return utf8Truncate(s, w - 1) + " ";
     }
-    // Padding: (w - dispW) spaces — tính theo ký tự hiển thị, không phải bytes
     return s + std::string(w - dispW, ' ');
 }
 
-// Trích xuất Tên (từ cuối cùng) từ chuỗi Họ và Tên
 inline std::string getFirstName(const std::string& fullName) {
     std::string trimmed = trim(fullName);
     size_t pos = trimmed.find_last_of(" \t");
-    if (pos == std::string::npos) return trimmed; // Nếu chỉ có 1 chữ thì trả về chữ đó
+    if (pos == std::string::npos) return trimmed;
     return trimmed.substr(pos + 1);
 }
-
 }
