@@ -1,0 +1,10 @@
+202418837|Đinh Thị Lan Anh|MI1-02|24/01/2006|Toán Tin|ANH.DTL2418837@sis.hust.edu.vn|Đang học
+202418915|Phạm Quốc Huy|MI1-03|15/08/2006|Toán Tin|HUY.PQ2418915@sis.hust.edu.vn|Đang học
+202418957|Lưu Nguyễn Thiện Nhân|MI1-02|05/11/2006|Toán Tin|NHAN.LNT2418957@sis.hust.edu.vn|Đang học
+202312345|Nguyễn Văn Mạnh|ME2-04|12/03/2005|Kỹ thuật cơ khí|MANH.NV2312345@sis.hust.edu.vn|Bảo lưu
+202411223|Vũ Hoàng Long|MI1-02|14/02/2006|Toán Tin|LONG.VH2411223@sis.hust.edu.vn|Đang học
+202345678|Lê Trọng Tấn|EE2-03|22/05/2005|Kỹ thuật điện|TAN.LT2345678@sis.hust.edu.vn|Cảnh cáo
+202256789|Trần Hữu Phước|IT1-01|10/10/2004|Công nghệ thông tin|PHUOC.TH2256789@sis.hust.edu.vn|Đang học
+202109876|Phạm Thu Hà|CH1-01|08/12/2003|Kỹ thuật hóa học|HA.PT2109876@sis.hust.edu.vn|Tốt nghiệp
+202455667|Ngô Mai Phương|FL1-04|30/07/2006|Ngôn ngữ Anh|PHUONG.NM2455667@sis.hust.edu.vn|Đang học
+202213579|Bùi Đức Anh|ET1-02|19/09/2004|Điện tử viễn thông|ANH.BD2213579@sis.hust.edu.vn|Bảo lưu
