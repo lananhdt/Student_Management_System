@@ -82,18 +82,16 @@ student_management_system/
 │   ├── class_roster.txt  # Danh sách sinh viên đăng ký lớp
 │   └── scores.txt        # Lưu trữ Điểm số
 │
-├── src/                  # Thư mục chứa Mã nguồn
-│   ├── main.cpp          # Entry point điều hướng hệ thống
-│   ├── Models.h          # Cấu trúc Entities & Nodes (SNode, SubNode, ClassNode...)
-│   ├── Utils.h           # Core logic: Quy đổi điểm, Validate nhập liệu, Định dạng in
-│   ├── HashMap.h         # Cấu trúc Bảng băm (StudentHashMap, SubjectHashMap)
-│   ├── StudentManager.h  # Module xử lý nghiệp vụ Sinh viên
-│   ├── SubjectManager.h  # Module xử lý nghiệp vụ Môn học
-│   ├── ClassManager.h    # Module tổ chức Lớp học phần & Roster
-│   ├── ScoreManager.h    # Module tính toán GPA & Báo cáo
-│   ├── FileManager.h     # Giao tiếp I/O đọc/ghi tệp tin
-│   └── Menu.h            # Vòng lặp điều hướng giao diện CLI
-│
+├── main.cpp              # Entry point điều hướng hệ thống
+├── Models.h              # Cấu trúc Entities & Nodes (SNode, SubNode, ClassNode...)
+├── Utils.h               # Core logic: Quy đổi điểm, Validate nhập liệu, Định dạng in
+├── HashMap.h             # Cấu trúc Bảng băm (StudentHashMap, SubjectHashMap)
+├── StudentManager.h      # Module xử lý nghiệp vụ Sinh viên
+├── SubjectManager.h      # Module xử lý nghiệp vụ Môn học
+├── ClassManager.h        # Module tổ chức Lớp học phần & Roster
+├── ScoreManager.h        # Module tính toán GPA & Báo cáo
+├── FileManager.h         # Giao tiếp I/O đọc/ghi tệp tin
+├── Menu.h                # Vòng lặp điều hướng giao diện CLI
 └── README.md
 ```
 
