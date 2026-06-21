@@ -21,14 +21,14 @@ class StudentManager {
     friend class FileManager;
     friend class ScoreManager;
 
-    // Tìm node giữa danh sách (slow pointer)
+    // Tìm node giữa danh sách
     SNode* midNode(SNode* h) {
         SNode* slow = h, *fast = h ? h->next : nullptr;
         while (fast && fast->next) { slow = slow->next; fast = fast->next->next; }
         return slow;
     }
 
-    // Merge sort GPA giảm dần — nhận mảng float* gpaArr song song
+    // Merge sort GPA giảm dần
     typedef bool (*CmpFn)(SNode*, SNode*);
 
     SNode* mergeWith(SNode* a, SNode* b, CmpFn cmp) {
