@@ -1,6 +1,6 @@
 // =============================================================================================
 //  MENU.H – HỆ THỐNG ĐIỀU KHIỂN GIAO DIỆN
-//  – Điều hướng người dùng qua 4 module chính
+//  - Điều hướng người dùng qua 4 module chính
 //  – Xử lý logic nhập liệu và gọi các hàm nghiệp vụ của các Manager
 // =============================================================================================
 
@@ -544,8 +544,6 @@ class Menu {
 public:
     Menu(StudentManager& s, SubjectManager& sub, ScoreManager& sc, ClassManager& c)
         : stm(s), sbm(sub), scm(sc), cm(c) {}
-
-    // Vòng lặp chính của chương trình, hiển thị menu và điều hướng tác vụ – chạy đến khi người dùng chọn 0
     void run() {
         Utils::title("             CHÀO MỪNG ĐẾN HỆ THỐNG QUẢN LÝ SINH VIÊN");
         std::cout << "  Dữ liệu được tự động tải từ file text.\n\n";
