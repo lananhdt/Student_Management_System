@@ -59,7 +59,15 @@ class StudentManager {
     }
 
     static bool cmpById(SNode* a, SNode* b)   { return a->data.id   <= b->data.id; }
-    static bool cmpByName(SNode* a, SNode* b)  { return a->data.name <= b->data.name; }
+    static bool cmpByName(SNode* a, SNode* b) {
+        std::string tenA = Utils::getFirstName(a->data.name);
+        std::string tenB = Utils::getFirstName(b->data.name);
+        
+        if (tenA != tenB) {
+            return tenA < tenB;
+        }
+        return a->data.name <= b->data.name; 
+    }
 
 public:
     StudentManager() : head(nullptr), tail(nullptr), count(0) {}
