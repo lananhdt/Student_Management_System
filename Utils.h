@@ -210,4 +210,12 @@ inline std::string col(const std::string& s, int w) {
     return s + std::string(w - dispW, ' ');
 }
 
+// Trích xuất Tên (từ cuối cùng) từ chuỗi Họ và Tên
+inline std::string getFirstName(const std::string& fullName) {
+    std::string trimmed = trim(fullName);
+    size_t pos = trimmed.find_last_of(" \t");
+    if (pos == std::string::npos) return trimmed; // Nếu chỉ có 1 chữ thì trả về chữ đó
+    return trimmed.substr(pos + 1);
+}
+
 }
