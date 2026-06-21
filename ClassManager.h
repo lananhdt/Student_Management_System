@@ -19,12 +19,10 @@ class ClassManager {
 
 public:
     ClassManager() : head(nullptr), tail(nullptr), count(0) {}
-    
-    // Hàm hủy (Destructor) cực kỳ quan trọng để dọn dẹp bộ nhớ lồng nhau
     ~ClassManager() {
         ClassNode* c = head;
         while (c) {
-            // Bước 1: Giải phóng danh sách sinh viên (RosterNode) bên trong lớp này
+            // Giải phóng danh sách sinh viên bên trong lớp
             RosterNode* rc = c->data.rosterHead;
             while (rc) {
                 RosterNode* tempRoster = rc;
@@ -32,7 +30,7 @@ public:
                 delete tempRoster;
             }
             
-            // Bước 2: Giải phóng chính node Lớp học phần (ClassNode)
+            // Giải phóng node Lớp học phần (ClassNode)
             ClassNode* tempClass = c;
             c = c->next;
             delete tempClass;
@@ -40,7 +38,7 @@ public:
     }
 
     // =========================================================================================
-    // Tìm kiếm lớp học phần theo mã lớp (VD: "158241")
+    // Tìm kiếm lớp học phần theo mã lớp
     // =========================================================================================
     ClassNode* findByClassCode(const std::string& code) const {
         for (ClassNode* c = head; c; c = c->next) {
@@ -71,12 +69,12 @@ public:
         
         SNode* sv = stm.findById(studentId);
         
-        // Nếu không tồn tại HOẶC sinh viên đã nghỉ học, chặn lại ngay!
+        // Sinh viên không tồn tại hoặc đã nghỉ học
         if (!sv || sv->data.status == "Đã nghỉ học") {
             return false; 
         }
 
-        // Kiểm tra xem sinh viên đã có trong lớp chưa
+        // Kiểm tra sinh viên đã có trong lớp chưa
         for (RosterNode* r = cn->data.rosterHead; r; r = r->next) {
             if (r->studentId == studentId) return false; // Đã có trong lớp
         }
